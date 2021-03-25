@@ -1,0 +1,8 @@
+/news/sources/scrapybot/build/
+/news/sources/scrapybot/scrapybot.egg-info/
+
+twitter/functions/.vscode/launch.json
+twitter/functions/.vscode/settings.json
+
+node_modules/
+package-lock.json

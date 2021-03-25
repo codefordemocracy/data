@@ -1,0 +1,4 @@
+elasticsearch>=7.0.0,<8.0.0
+google-cloud-secret-manager==2.2.0
+praw==6.5.1
+beautifulsoup4>=4.4.1
