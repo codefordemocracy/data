@@ -38,7 +38,7 @@ def filing_990_historical(message, context):
     latest_saved_year = settings['latest_year_file']
     latest_saved_idx = settings['latest_index_in_file']
     failed_object_ids = settings['failed_object_ids']
-    if latest_saved_year == 2021:
+    if latest_saved_year == 2010:
         return True
     xml_runner = XMLRunner()
     start_time = time.time()
@@ -86,7 +86,7 @@ def filing_990_historical(message, context):
                     '_source':  json.dumps({'org': org, 'grants': grants_to_create})
                 })
             else:
-                latest_saved_year += 1
+                latest_saved_year -= 1
         if exit:
             break
     if actions:
