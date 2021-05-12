@@ -1,0 +1,5 @@
+elasticsearch==7.12.0
+elasticsearch-dsl==7.3.0
+irsx==0.2.12
+requests==2.25.1
+python-dateutil==2.8.1
