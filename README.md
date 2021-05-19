@@ -81,6 +81,16 @@ The work of downloading, transforming, and loading datasets is handled by these 
 * **federal_fec_compute_load_graph**: loads the FEC data into Neo4j
 * **federal_fec_ingest_unzip_gcs**: automatically unzips .zip files in Google Cloud Storage
 
+#### House
+
+* **federal_house_lobbying_ingest_get_disclosures**: indexes House lobbying disclosures into ElasticSearch
+* **federal_house_lobbying_ingest_get_contributions**: indexes House lobbying contributions into ElasticSearch
+
+#### Senate
+
+* **federal_senate_lobbying_ingest_get_disclosures**: indexes Senate lobbying disclosures into ElasticSearch
+* **federal_senate_lobbying_ingest_get_contributions**: indexes Senate lobbying contributions into ElasticSearch
+
 ## Principles
 
 Except for nodes that represent extracted information (ie: domains), each dataset is loaded into Neo4j using a set of labels that are unique to the dataset so that it can be restructured or ripped out without damaging the rest of the knowledge graph.
