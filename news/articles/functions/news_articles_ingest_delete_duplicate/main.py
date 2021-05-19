@@ -37,7 +37,7 @@ def news_articles_ingest_delete_duplicate(message, context):
 
     # delete the document from Firestore
     try:
-        ref.document(id)delete()
+        ref.document(id).delete()
         logger.info(' - '.join(['DOCUMENT NO LONGER EXISTS IN FIRESTORE', id]))
     except Exception as e:
         logger.error(' - '.join(['FAILED TO DELETE FROM FIRESTORE', id, str(e)]))
