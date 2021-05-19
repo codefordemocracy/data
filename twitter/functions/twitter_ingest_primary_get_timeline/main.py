@@ -1,7 +1,6 @@
 import logging
 from google.cloud import secretmanager
 from google.cloud import firestore
-from google.cloud.firestore_v1beta1 import ArrayUnion
 from google.cloud import pubsub
 from elasticsearch import Elasticsearch, helpers
 import tweepy
@@ -223,7 +222,7 @@ def twitter_ingest_primary_get_timeline(message, context):
     }
     if firsterror:
         primary_user_ref.document(str(id)).set({
-            "last_error": ArrayUnion([datetime.datetime.now(datetime.timezone.utc)]),
+            "last_error": firestore.ArrayUnion([datetime.datetime.now(datetime.timezone.utc)]),
             "last_updated": datetime.datetime.now(datetime.timezone.utc)
         }, merge=True)
         logger.error(' - '.join(['RECORDED USER ERROR', str(id)]))
