@@ -20,25 +20,25 @@ def federal_fec_ingest_queue_download(message, context):
 
     # list of files to download from FEC
     files = [
-        "https://www.fec.gov/files/bulk-downloads/2020/weball20.zip",
-        "https://www.fec.gov/files/bulk-downloads/2020/cn20.zip",
-        "https://www.fec.gov/files/bulk-downloads/2020/ccl20.zip",
-        "https://www.fec.gov/files/bulk-downloads/2020/webl20.zip",
-        "https://www.fec.gov/files/bulk-downloads/2020/cm20.zip",
-        "https://www.fec.gov/files/bulk-downloads/2020/webk20.zip",
-        "https://www.fec.gov/files/bulk-downloads/2020/indiv20.zip",
-        "https://www.fec.gov/files/bulk-downloads/2020/pas220.zip",
-        "https://www.fec.gov/files/bulk-downloads/2020/oth20.zip",
-        "https://www.fec.gov/files/bulk-downloads/2020/oppexp20.zip",
-        "https://www.fec.gov/files/bulk-downloads/2020/independent_expenditure_2020.csv",
-        "https://www.fec.gov/files/bulk-downloads/2020/ElectioneeringComm_2020.csv",
-        "https://www.fec.gov/files/bulk-downloads/2020/CommunicationCosts_2020.csv"
+        "https://www.fec.gov/files/bulk-downloads/2022/weball22.zip",
+        "https://www.fec.gov/files/bulk-downloads/2022/cn22.zip",
+        "https://www.fec.gov/files/bulk-downloads/2022/ccl22.zip",
+        "https://www.fec.gov/files/bulk-downloads/2022/webl22.zip",
+        "https://www.fec.gov/files/bulk-downloads/2022/cm22.zip",
+        "https://www.fec.gov/files/bulk-downloads/2022/webk22.zip",
+        "https://www.fec.gov/files/bulk-downloads/2022/indiv22.zip",
+        "https://www.fec.gov/files/bulk-downloads/2022/pas222.zip",
+        "https://www.fec.gov/files/bulk-downloads/2022/oth22.zip",
+        "https://www.fec.gov/files/bulk-downloads/2022/oppexp22.zip",
+        "https://www.fec.gov/files/bulk-downloads/2022/independent_expenditure_2022.csv",
+        "https://www.fec.gov/files/bulk-downloads/2022/ElectioneeringComm_2022.csv",
+        "https://www.fec.gov/files/bulk-downloads/2022/CommunicationCosts_2022.csv"
     ]
 
     for zipurl in files:
 
         # sends a message to Pub/Sub to download the files
-        topic = 'projects/' + gcp_project_id + '/topics/fec_ingest_download_zip'
+        topic = 'projects/' + gcp_project_id + '/topics/federal_fec_ingest_download_zip'
         publisher.publish(topic, b'download FEC zip file', zipurl=zipurl)
         logger.info(' - '.join(['COMPLETED', 'file sent to be downloaded', zipurl]))
 

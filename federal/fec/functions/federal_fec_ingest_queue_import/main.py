@@ -20,25 +20,25 @@ def federal_fec_ingest_queue_import(message, context):
 
     # list of files to import from Google Cloud Storage
     files = [
-        "weball20/weball20.txt",
-        "cn20/cn.txt",
-        "ccl20/ccl.txt",
-        "webl20/webl20.txt",
-        "cm20/cm.txt",
-        "webk20/webk20.txt",
-        "indiv20/itcont.txt",
-        "pas220/itpas2.txt",
-        "oth20/itoth.txt",
-        "oppexp20/oppexp.txt",
-        "independent_expenditure_2020/independent_expenditure_2020.csv",
-        "ElectioneeringComm_2020/ElectioneeringComm_2020.csv",
-        "CommunicationCosts_2020/CommunicationCosts_2020.csv"
+        "weball22/weball22.txt",
+        "cn22/cn.txt",
+        "ccl22/ccl.txt",
+        "webl22/webl22.txt",
+        "cm22/cm.txt",
+        "webk22/webk22.txt",
+        "indiv22/itcont.txt",
+        "pas222/itpas2.txt",
+        "oth22/itoth.txt",
+        "oppexp22/oppexp.txt",
+        "independent_expenditure_2022/independent_expenditure_2022.csv",
+        "ElectioneeringComm_2022/ElectioneeringComm_2022.csv",
+        "CommunicationCosts_2022/CommunicationCosts_2022.csv"
     ]
 
     for filepath in files:
 
         # sends a message to Pub/Sub to import the files
-        topic = 'projects/' + gcp_project_id + '/topics/fec_ingest_import_bigquery'
+        topic = 'projects/' + gcp_project_id + '/topics/federal_fec_ingest_import_bigquery'
         publisher.publish(topic, b'import FEC file', filepath=filepath)
         logger.info(' - '.join(['COMPLETED', 'file sent to be imported', filepath]))
 

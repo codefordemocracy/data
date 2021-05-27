@@ -94,12 +94,12 @@ def loop_data_load(section):
 
     # randomly select loaded contributions table to get around 1000 inserts per day
     loaded_contributions_tables = [
-        "loaded_contributions20_1",
-        "loaded_contributions20_2",
-        "loaded_contributions20_3",
-        "loaded_contributions20_4",
-        "loaded_contributions20_5",
-        "loaded_contributions20_6"
+        "loaded_contributions22_1",
+        "loaded_contributions22_2",
+        "loaded_contributions22_3",
+        "loaded_contributions22_4",
+        "loaded_contributions22_5",
+        "loaded_contributions22_6"
     ]
     loaded_contributions_table = random.choice(loaded_contributions_tables)
 
@@ -112,8 +112,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.cand_id, a.cand_name, a.cand_pty_affiliation, a.cand_election_yr, a.cand_office_st, a.cand_office, a.cand_office_district, a.cand_ici
-        FROM `federal_fec.candidates20` a
-        LEFT JOIN `federal_fec.loaded_candidates20` b
+        FROM `federal_fec.candidates22` a
+        LEFT JOIN `federal_fec.loaded_candidates22` b
         ON a.cand_id = b.cand_id
         WHERE b.cand_id IS NULL AND a.cand_office_district IS NOT NULL
         LIMIT 1000
@@ -157,7 +157,7 @@ def loop_data_load(section):
                 neo4j.write_transaction(cypher.merge_rel_candidate_race, batch=races)
             values_string = get_values_string(values)
             query_job = client.query("""
-            INSERT INTO `federal_fec.loaded_candidates20` (cand_id)
+            INSERT INTO `federal_fec.loaded_candidates22` (cand_id)
             VALUES %s
             """ % (values_string), job_config=gen_job_config())
             query_job.result()
@@ -175,8 +175,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.cmte_id, a.cmte_nm, a.cmte_dsgn, a.cmte_tp, a.cmte_pty_affiliation, a.org_tp, a.connected_org_nm
-        FROM `federal_fec.committees20` a
-        LEFT JOIN `federal_fec.loaded_committees20` b
+        FROM `federal_fec.committees22` a
+        LEFT JOIN `federal_fec.loaded_committees22` b
         ON a.cmte_id = b.cmte_id
         WHERE b.cmte_id IS NULL
         LIMIT 1000
@@ -217,7 +217,7 @@ def loop_data_load(section):
                 neo4j.write_transaction(cypher.merge_rel_committee_employer, batch=employers)
             values_string = get_values_string(values)
             query_job = client.query("""
-            INSERT INTO `federal_fec.loaded_committees20` (cmte_id)
+            INSERT INTO `federal_fec.loaded_committees22` (cmte_id)
             VALUES %s
             """ % (values_string), job_config=gen_job_config())
             query_job.result()
@@ -235,8 +235,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.cmte_id, a.cand_id, a.cand_election_yr, a.linkage_id
-        FROM `federal_fec.ccl20` a
-        LEFT JOIN `federal_fec.loaded_linkages20` b
+        FROM `federal_fec.ccl22` a
+        LEFT JOIN `federal_fec.loaded_linkages22` b
         ON a.linkage_id = b.linkage_id
         WHERE b.linkage_id IS NULL
         LIMIT 1000
@@ -260,7 +260,7 @@ def loop_data_load(section):
                 neo4j.write_transaction(cypher.merge_rel_committee_associated_with, batch=rows)
             values_string = get_values_string(values)
             query_job = client.query("""
-            INSERT INTO `federal_fec.loaded_linkages20` (linkage_id)
+            INSERT INTO `federal_fec.loaded_linkages22` (linkage_id)
             VALUES %s
             """ % (values_string), job_config=gen_job_config())
             query_job.result()
@@ -278,8 +278,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_com_receipts20` a
-        LEFT JOIN `federal_fec.loaded_contributions20` b
+        FROM `federal_fec.contributions_com_receipts22` a
+        LEFT JOIN `federal_fec.loaded_contributions22` b
         ON a.sub_id = b.sub_id
         WHERE b.sub_id IS NULL
         LIMIT 1000
@@ -342,8 +342,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_com_disbursements20` a
-        LEFT JOIN `federal_fec.loaded_contributions20` b
+        FROM `federal_fec.contributions_com_disbursements22` a
+        LEFT JOIN `federal_fec.loaded_contributions22` b
         ON a.sub_id = b.sub_id
         WHERE b.sub_id IS NULL
         LIMIT 1000
@@ -406,8 +406,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_can_disbursements20` a
-        LEFT JOIN `federal_fec.loaded_contributions20` b
+        FROM `federal_fec.contributions_can_disbursements22` a
+        LEFT JOIN `federal_fec.loaded_contributions22` b
         ON a.sub_id = b.sub_id
         WHERE b.sub_id IS NULL
         LIMIT 1000
@@ -470,8 +470,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_org_receipts20` a
-        LEFT JOIN `federal_fec.loaded_contributions20` b
+        FROM `federal_fec.contributions_org_receipts22` a
+        LEFT JOIN `federal_fec.loaded_contributions22` b
         ON a.sub_id = b.sub_id
         WHERE b.sub_id IS NULL
         LIMIT 1000
@@ -534,8 +534,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_org_disbursements20` a
-        LEFT JOIN `federal_fec.loaded_contributions20` b
+        FROM `federal_fec.contributions_org_disbursements22` a
+        LEFT JOIN `federal_fec.loaded_contributions22` b
         ON a.sub_id = b.sub_id
         WHERE b.sub_id IS NULL
         LIMIT 1000
@@ -598,8 +598,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_from_candidates20` a
-        LEFT JOIN `federal_fec.loaded_contributions20` b
+        FROM `federal_fec.contributions_from_candidates22` a
+        LEFT JOIN `federal_fec.loaded_contributions22` b
         ON a.sub_id = b.sub_id
         WHERE b.sub_id IS NULL
         LIMIT 1000
@@ -662,8 +662,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.entity_tp, a.name, a.state, a.zip_code, a.employer, a.occupation, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_from_ind_donors20` a
-        LEFT JOIN `federal_fec.loaded_contributions20` b
+        FROM `federal_fec.contributions_from_ind_donors22` a
+        LEFT JOIN `federal_fec.loaded_contributions22` b
         ON a.sub_id = b.sub_id
         WHERE b.sub_id IS NULL
         LIMIT 1000
@@ -746,8 +746,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.entity_tp, a.name, a.state, a.zip_code, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_from_org_donors20` a
-        LEFT JOIN `federal_fec.loaded_contributions20` b
+        FROM `federal_fec.contributions_from_org_donors22` a
+        LEFT JOIN `federal_fec.loaded_contributions22` b
         ON a.sub_id = b.sub_id
         WHERE b.sub_id IS NULL
         LIMIT 1000
@@ -813,8 +813,8 @@ def loop_data_load(section):
 
         query_job = client.query("""
         SELECT a.can_id, a.spe_id, a.exp_amo, a.exp_dat, a.sup_opp, a.pur, a.pay, a.file_num, a.amn_ind, a.tra_id, a.ima_num, a.prev_file_num
-        FROM `federal_fec.independent_expenditure_2020` a
-        LEFT JOIN `federal_fec.loaded_independent_expenditure_2020` b
+        FROM `federal_fec.independent_expenditure_2022` a
+        LEFT JOIN `federal_fec.loaded_independent_expenditure_2022` b
         ON a.file_num = b.file_num
         AND a.tra_id = b.tra_id
         WHERE b.file_num IS NULL AND b.tra_id IS NULL
@@ -873,7 +873,7 @@ def loop_data_load(section):
                 neo4j.write_transaction(cypher.merge_ind_exp_amend_without_date, batch=amend_rows_without_date)
             values_string = get_values_string_rows(values)
             query_job = client.query("""
-            INSERT INTO `federal_fec.loaded_independent_expenditure_2020` (file_num, tra_id)
+            INSERT INTO `federal_fec.loaded_independent_expenditure_2022` (file_num, tra_id)
             VALUES %s
             """ % (values_string), job_config=gen_job_config())
             query_job.result()

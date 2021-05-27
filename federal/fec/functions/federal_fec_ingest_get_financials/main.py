@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 
 # get secrets
 secrets = secretmanager.SecretManagerServiceClient()
-fec_api_key = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/fec_api_key/versions/1"}).payload.data.decode()
+federal_fec_api_key = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/federal_fec_api_key/versions/1"}).payload.data.decode()
 
 # connect to fec api
 def get(type, datestring, page):
-    response = requests.get('https://api.open.fec.gov/v1/reports/' + type + '/?per_page=100&api_key=' + fec_api_key + '&min_receipt_date=' + datestring + '&max_receipt_date=' + datestring + '&page=' + str(page))
+    response = requests.get('https://api.open.fec.gov/v1/reports/' + type + '/?per_page=100&api_key=' + federal_fec_api_key + '&min_receipt_date=' + datestring + '&max_receipt_date=' + datestring + '&page=' + str(page))
     if response.status_code == 200:
         return json.loads(response.text)
     return False
