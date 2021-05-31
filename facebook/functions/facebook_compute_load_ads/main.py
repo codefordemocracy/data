@@ -43,7 +43,7 @@ def facebook_compute_load_ads(message, context):
     # loop for 520s
     while time.time()-start < 520:
 
-        docs = q[0:100].sort("-obj.ad_creation_time").filter("exists", field="obj.ad_delivery_start_time").execute()
+        docs = q[0:100].sort("-obj.ad_creation_time").exclude("exists", field="meta.last_graphed").execute()
         if len(docs) == 0:
             logger.info(' - '.join(['NO ADS FOUND FOR LOADING']))
             break
@@ -182,9 +182,10 @@ def facebook_compute_load_ads(message, context):
                 "_op_type": "update",
                 "_index": "facebook_ads",
                 "_id": doc.obj.id,
-                "script": {
-                    "source": "ctx._source.in_graph = true",
-                    "lang": "painless"
+                "_source": {
+                    "meta": {
+                        "last_graphed": datetime.datetime.now(datetime.timezone.utc)
+                    }
                 }
             })
         # batch write to neo4j

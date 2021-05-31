@@ -97,9 +97,11 @@ def loop(token, after, errors):
                     "_index": "facebook_ads",
                     "_id": ad["id"],
                     "_source": {
-                        "last_indexed": datetime.datetime.now(datetime.timezone.utc),
                         "obj": ad,
-                        "processed": processed
+                        "processed": processed,
+                        "meta": {
+                            "last_indexed": datetime.datetime.now(datetime.timezone.utc)
+                        }
                     }
                 })
             helpers.bulk(es, actions)

@@ -74,9 +74,11 @@ def reddit_ingest_get_ads(message, context):
             "_index": "reddit_ads",
             "_id": obj["id"],
             "_source": {
-                "last_indexed": datetime.datetime.now(datetime.timezone.utc),
                 "obj": obj,
-                "processed": processed
+                "processed": processed,
+                "meta": {
+                    "last_indexed": datetime.datetime.now(datetime.timezone.utc)
+                }
             }
         })
     helpers.bulk(es, actions)
