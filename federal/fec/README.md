@@ -1,6 +1,6 @@
 ## Data Sources
 
-We use the */reports* and */filings* endpoints from the FEC API. We also process 13 FEC datasets from their bulk downloads, all of which are stored in separate tables in the *federal* schema in Postgres.
+We process 13 FEC datasets from their bulk downloads, all of which are stored in separate tables in the *federal* schema in BigQuery.
 
 **Dataset:** All candidates
 **Download Link:** https://www.fec.gov/files/bulk-downloads/2020/weball20.zip

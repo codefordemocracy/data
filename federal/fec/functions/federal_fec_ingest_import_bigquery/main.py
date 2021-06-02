@@ -41,7 +41,7 @@ def federal_fec_ingest_import_bigquery(message, context):
     job_config.schema = []
 
     # set schema
-    if table == "weball22":
+    if table[:6] == "weball":
         job_config.schema = [
             bigquery.SchemaField("cand_id", "STRING"),
             bigquery.SchemaField("cand_name", "STRING"),
@@ -74,7 +74,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("indiv_refunds", "FLOAT"),
             bigquery.SchemaField("cmte_refunds", "FLOAT")
         ]
-    elif table == "cn22":
+    elif table[:2] == "cn":
         job_config.schema = [
             bigquery.SchemaField("cand_id", "STRING"),
             bigquery.SchemaField("cand_name", "STRING"),
@@ -92,7 +92,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("cand_st", "STRING"),
             bigquery.SchemaField("cand_zip", "STRING")
         ]
-    elif table == "ccl22":
+    elif table[:3] == "ccl":
         job_config.schema = [
             bigquery.SchemaField("cand_id", "STRING"),
             bigquery.SchemaField("cand_election_yr", "INTEGER"),
@@ -102,7 +102,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("cmte_dsgn", "STRING"),
             bigquery.SchemaField("linkage_id", "INTEGER")
         ]
-    elif table == "webl22":
+    elif table[:4] == "webl":
         job_config.schema = [
             bigquery.SchemaField("cand_id", "STRING"),
             bigquery.SchemaField("cand_name", "STRING"),
@@ -135,7 +135,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("indiv_refunds", "FLOAT"),
             bigquery.SchemaField("cmte_refunds", "FLOAT")
         ]
-    elif table == "cm22":
+    elif table[:2] == "cm":
         job_config.schema = [
             bigquery.SchemaField("cmte_id", "STRING"),
             bigquery.SchemaField("cmte_nm", "STRING"),
@@ -153,7 +153,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("connected_org_nm", "STRING"),
             bigquery.SchemaField("cand_id", "STRING")
         ]
-    elif table == "webk22":
+    elif table[:4] == "webk":
         job_config.schema = [
             bigquery.SchemaField("cmte_id", "STRING"),
             bigquery.SchemaField("cmte_nm", "STRING"),
@@ -183,7 +183,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("nonfed_share_exp", "FLOAT"),
             bigquery.SchemaField("cvg_end_dt", "STRING")
         ]
-    elif table == "indiv22":
+    elif table[:5] == "indiv":
         job_config.schema = [
             bigquery.SchemaField("cmte_id", "STRING"),
             bigquery.SchemaField("amndt_ind", "STRING"),
@@ -207,7 +207,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("memo_text", "STRING"),
             bigquery.SchemaField("sub_id", "INTEGER")
         ]
-    elif table == "pas222":
+    elif table[:3] == "pas":
         job_config.schema = [
             bigquery.SchemaField("cmte_id", "STRING"),
             bigquery.SchemaField("amndt_ind", "STRING"),
@@ -232,7 +232,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("memo_text", "STRING"),
             bigquery.SchemaField("sub_id", "INTEGER")
         ]
-    elif table == "oth22":
+    elif table[:3] == "oth":
         job_config.schema = [
             bigquery.SchemaField("cmte_id", "STRING"),
             bigquery.SchemaField("amndt_ind", "STRING"),
@@ -256,7 +256,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("memo_text", "STRING"),
             bigquery.SchemaField("sub_id", "INTEGER")
         ]
-    elif table == "oppexp22":
+    elif table[:6] == "oppexp":
         job_config.schema = [
             bigquery.SchemaField("cmte_id", "STRING"),
             bigquery.SchemaField("amndt_ind", "STRING"),
@@ -285,7 +285,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("back_ref_tran_id", "STRING"),
             bigquery.SchemaField("empty", "STRING")
         ]
-    elif table == "independent_expenditure_2022":
+    elif table[:23] == "independent_expenditure":
         job_config.schema = [
             bigquery.SchemaField("can_id", "STRING"),
             bigquery.SchemaField("can_nam", "STRING"),
@@ -311,7 +311,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("prev_file_num", "INTEGER"),
             bigquery.SchemaField("dissem_dt", "STRING")
         ]
-    elif table == "ElectioneeringComm_2022":
+    elif table[:18] == "ElectioneeringComm":
         job_config.schema = [
             bigquery.SchemaField("candidate_id", "STRING"),
             bigquery.SchemaField("candidate_name", "STRING"),
@@ -333,7 +333,7 @@ def federal_fec_ingest_import_bigquery(message, context):
             bigquery.SchemaField("number_of_candidates", "INTEGER"),
             bigquery.SchemaField("calculated_candidate_share", "FLOAT")
         ]
-    elif table == "CommunicationCosts_2022":
+    elif table[:18] == "CommunicationCosts":
         job_config.schema = [
             bigquery.SchemaField("cmte_id", "STRING"),
             bigquery.SchemaField("cmte_name", "STRING"),
@@ -390,6 +390,8 @@ def federal_fec_ingest_import_bigquery(message, context):
         if archive_table is not None:
             if destination_table.num_rows >= archive_table.num_rows:
                 logger.info(' - '.join(['COMPLETED', 'file imported', filepath]))
+                # delete archive table
+                client.delete_table(archive_table_ref)
             else:
                 logger.error(' - '.join(['INFO', 'rolling back', filepath]))
                 # delete new table
