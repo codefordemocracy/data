@@ -274,11 +274,11 @@ def loop_data_load(section):
 
     if section == 3:
         # load contributions from committees
-        logger.info(' - '.join(['INFO', 'loading contributions from committees', 'CCM COM PAC PTY receipts']))
+        logger.info(' - '.join(['INFO', 'loading contributions from committees']))
 
         query_job = client.query("""
         SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_com_receipts22` a
+        FROM `federal_fec.contributions_from_committees22` a
         LEFT JOIN `federal_fec.loaded_contributions22` b
         ON a.sub_id = b.sub_id
         WHERE b.sub_id IS NULL
@@ -334,265 +334,9 @@ def loop_data_load(section):
         if count == 0:
             section += 1
 
-        logger.info(' - '.join(['SUCCESS', 'loaded contributions from committees', 'CCM COM PAC PTY receipts', str(count)]))
+        logger.info(' - '.join(['SUCCESS', 'loaded contributions from committees', str(count)]))
 
     if section == 4:
-        # load contributions from committees
-        logger.info(' - '.join(['INFO', 'loading contributions from committees', 'CCM COM PAC PTY disbursements']))
-
-        query_job = client.query("""
-        SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_com_disbursements22` a
-        LEFT JOIN `federal_fec.loaded_contributions22` b
-        ON a.sub_id = b.sub_id
-        WHERE b.sub_id IS NULL
-        LIMIT 1000
-        """, job_config=gen_job_config())
-        df = query_job.result().to_dataframe()
-        assert query_job.state == "DONE"
-
-        values = []
-        rows_with_date = []
-        rows_without_date = []
-        for index, row in df.iterrows():
-            record = {
-                "source": row["source"],
-                "target": row["target"],
-                "transaction_amt": row["transaction_amt"],
-                "amndt_ind": row["amndt_ind"],
-                "rpt_tp": row["rpt_tp"],
-                "transaction_pgi": row["transaction_pgi"],
-                "transaction_tp": row["transaction_tp"],
-                "image_num": row["image_num"],
-                "file_num": row["file_num"],
-                "tran_id": row["tran_id"],
-                "sub_id": row["sub_id"]
-            }
-            if row["transaction_dt"] is not None:
-                date = parse_date(row["transaction_dt"])
-                record.update({
-                    "year": date.year,
-                    "month": date.month,
-                    "day": date.day,
-                    "hour": date.hour,
-                    "minute": date.minute,
-                })
-                rows_with_date.append(record)
-            else:
-                rows_without_date.append(record)
-            values.append(row["sub_id"])
-
-        if len(values) > 0:
-            with driver.session() as neo4j:
-                neo4j.write_transaction(cypher.merge_rel_committee_contributed_to_with_date, batch=rows_with_date)
-                neo4j.write_transaction(cypher.merge_rel_committee_contributed_to_without_date, batch=rows_without_date)
-            values_string = get_values_string(values)
-            query_job = client.query(f"""
-            INSERT INTO `federal_fec.{loaded_contributions_table}` (sub_id)
-            VALUES %s
-            """ % (values_string), job_config=gen_job_config())
-            query_job.result()
-            assert query_job.state == "DONE"
-            count += query_job.num_dml_affected_rows
-
-        if count == 0:
-            section += 1
-
-        logger.info(' - '.join(['SUCCESS', 'loaded contributions from committees', 'CCM COM PAC PTY disbursements', str(count)]))
-
-    if section == 5:
-        # load contributions from committees
-        logger.info(' - '.join(['INFO', 'loading contributions from committees', 'CAN disbursements']))
-
-        query_job = client.query("""
-        SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_can_disbursements22` a
-        LEFT JOIN `federal_fec.loaded_contributions22` b
-        ON a.sub_id = b.sub_id
-        WHERE b.sub_id IS NULL
-        LIMIT 1000
-        """, job_config=gen_job_config())
-        df = query_job.result().to_dataframe()
-        assert query_job.state == "DONE"
-
-        values = []
-        rows_with_date = []
-        rows_without_date = []
-        for index, row in df.iterrows():
-            record = {
-                "source": row["source"],
-                "target": row["target"],
-                "transaction_amt": row["transaction_amt"],
-                "amndt_ind": row["amndt_ind"],
-                "rpt_tp": row["rpt_tp"],
-                "transaction_pgi": row["transaction_pgi"],
-                "transaction_tp": row["transaction_tp"],
-                "image_num": row["image_num"],
-                "file_num": row["file_num"],
-                "tran_id": row["tran_id"],
-                "sub_id": row["sub_id"]
-            }
-            if row["transaction_dt"] is not None:
-                date = parse_date(row["transaction_dt"])
-                record.update({
-                    "year": date.year,
-                    "month": date.month,
-                    "day": date.day,
-                    "hour": date.hour,
-                    "minute": date.minute,
-                })
-                rows_with_date.append(record)
-            else:
-                rows_without_date.append(record)
-            values.append(row["sub_id"])
-
-        if len(values) > 0:
-            with driver.session() as neo4j:
-                neo4j.write_transaction(cypher.merge_rel_committee_contributed_to_with_date, batch=rows_with_date)
-                neo4j.write_transaction(cypher.merge_rel_committee_contributed_to_without_date, batch=rows_without_date)
-            values_string = get_values_string(values)
-            query_job = client.query(f"""
-            INSERT INTO `federal_fec.{loaded_contributions_table}` (sub_id)
-            VALUES %s
-            """ % (values_string), job_config=gen_job_config())
-            query_job.result()
-            assert query_job.state == "DONE"
-            count += query_job.num_dml_affected_rows
-
-        if count == 0:
-            section += 1
-
-        logger.info(' - '.join(['SUCCESS', 'loaded contributions from committees', 'CAN disbursements', str(count)]))
-
-    if section == 6:
-        # load contributions from committees
-        logger.info(' - '.join(['INFO', 'loading contributions from committees', 'ORG receipts']))
-
-        query_job = client.query("""
-        SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_org_receipts22` a
-        LEFT JOIN `federal_fec.loaded_contributions22` b
-        ON a.sub_id = b.sub_id
-        WHERE b.sub_id IS NULL
-        LIMIT 1000
-        """, job_config=gen_job_config())
-        df = query_job.result().to_dataframe()
-        assert query_job.state == "DONE"
-
-        values = []
-        rows_with_date = []
-        rows_without_date = []
-        for index, row in df.iterrows():
-            record = {
-                "source": row["source"],
-                "target": row["target"],
-                "transaction_amt": row["transaction_amt"],
-                "amndt_ind": row["amndt_ind"],
-                "rpt_tp": row["rpt_tp"],
-                "transaction_pgi": row["transaction_pgi"],
-                "transaction_tp": row["transaction_tp"],
-                "image_num": row["image_num"],
-                "file_num": row["file_num"],
-                "tran_id": row["tran_id"],
-                "sub_id": row["sub_id"]
-            }
-            if row["transaction_dt"] is not None:
-                date = parse_date(row["transaction_dt"])
-                record.update({
-                    "year": date.year,
-                    "month": date.month,
-                    "day": date.day,
-                    "hour": date.hour,
-                    "minute": date.minute,
-                })
-                rows_with_date.append(record)
-            else:
-                rows_without_date.append(record)
-            values.append(row["sub_id"])
-
-        if len(values) > 0:
-            with driver.session() as neo4j:
-                neo4j.write_transaction(cypher.merge_rel_committee_contributed_to_with_date, batch=rows_with_date)
-                neo4j.write_transaction(cypher.merge_rel_committee_contributed_to_without_date, batch=rows_without_date)
-            values_string = get_values_string(values)
-            query_job = client.query(f"""
-            INSERT INTO `federal_fec.{loaded_contributions_table}` (sub_id)
-            VALUES %s
-            """ % (values_string), job_config=gen_job_config())
-            query_job.result()
-            assert query_job.state == "DONE"
-            count += query_job.num_dml_affected_rows
-
-        if count == 0:
-            section += 1
-
-        logger.info(' - '.join(['SUCCESS', 'loaded contributions from committees', 'ORG receipts', str(count)]))
-
-    if section == 7:
-        # load contributions from committees
-        logger.info(' - '.join(['INFO', 'loading contributions from committees', 'ORG disbursements']))
-
-        query_job = client.query("""
-        SELECT a.source, a.target, a.transaction_dt, a.transaction_amt, a.amndt_ind, a.rpt_tp, a.transaction_pgi, a.transaction_tp, a.image_num, a.file_num, a.tran_id, a.sub_id
-        FROM `federal_fec.contributions_org_disbursements22` a
-        LEFT JOIN `federal_fec.loaded_contributions22` b
-        ON a.sub_id = b.sub_id
-        WHERE b.sub_id IS NULL
-        LIMIT 1000
-        """, job_config=gen_job_config())
-        df = query_job.result().to_dataframe()
-        assert query_job.state == "DONE"
-
-        values = []
-        rows_with_date = []
-        rows_without_date = []
-        for index, row in df.iterrows():
-            record = {
-                "source": row["source"],
-                "target": row["target"],
-                "transaction_amt": row["transaction_amt"],
-                "amndt_ind": row["amndt_ind"],
-                "rpt_tp": row["rpt_tp"],
-                "transaction_pgi": row["transaction_pgi"],
-                "transaction_tp": row["transaction_tp"],
-                "image_num": row["image_num"],
-                "file_num": row["file_num"],
-                "tran_id": row["tran_id"],
-                "sub_id": row["sub_id"]
-            }
-            if row["transaction_dt"] is not None:
-                date = parse_date(row["transaction_dt"])
-                record.update({
-                    "year": date.year,
-                    "month": date.month,
-                    "day": date.day,
-                    "hour": date.hour,
-                    "minute": date.minute,
-                })
-                rows_with_date.append(record)
-            else:
-                rows_without_date.append(record)
-            values.append(row["sub_id"])
-
-        if len(values) > 0:
-            with driver.session() as neo4j:
-                neo4j.write_transaction(cypher.merge_rel_committee_contributed_to_with_date, batch=rows_with_date)
-                neo4j.write_transaction(cypher.merge_rel_committee_contributed_to_without_date, batch=rows_without_date)
-            values_string = get_values_string(values)
-            query_job = client.query(f"""
-            INSERT INTO `federal_fec.{loaded_contributions_table}` (sub_id)
-            VALUES %s
-            """ % (values_string), job_config=gen_job_config())
-            query_job.result()
-            assert query_job.state == "DONE"
-            count += query_job.num_dml_affected_rows
-
-        if count == 0:
-            section += 1
-
-        logger.info(' - '.join(['SUCCESS', 'loaded contributions from committees', 'ORG disbursements', str(count)]))
-
-    if section == 8:
         # load contributions from candidates
         logger.info(' - '.join(['INFO', 'loading contributions from candidates']))
 
@@ -656,7 +400,7 @@ def loop_data_load(section):
 
         logger.info(' - '.join(['SUCCESS', 'loaded contributions from candidates', str(count)]))
 
-    if section == 9:
+    if section == 5:
         # load contributions from individual donors
         logger.info(' - '.join(['INFO', 'loading contributions from individual donors']))
 
@@ -740,7 +484,7 @@ def loop_data_load(section):
 
         logger.info(' - '.join(['SUCCESS', 'loaded contributions from individual donors', str(count)]))
 
-    if section == 10:
+    if section == 6:
         # load contributions from organization donors
         logger.info(' - '.join(['INFO', 'loading contributions from organization donors']))
 
@@ -807,7 +551,7 @@ def loop_data_load(section):
 
         logger.info(' - '.join(['SUCCESS', 'loaded contributions from organization donors', str(count)]))
 
-    if section == 11:
+    if section == 7:
         # load independent expenditures
         logger.info(' - '.join(['INFO', 'loading independent expenditures']))
 
