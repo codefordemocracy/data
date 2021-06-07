@@ -140,31 +140,27 @@ def news_articles_ingest_get_url(message, context):
 
             # create the document for ElasticSearch
             doc = {
-                "url": parse_proxy(article.url),
                 "extracted": {
+                    "url": parse_proxy(article.url),
                     "title": article.title,
                     "date": article.publish_date,
                     "authors": article.authors,
-                    "text": article.text
+                    "text": article.text,
+                    "metadata": {
+                        "keywords": article.meta_keywords,
+                        "description": article.meta_description,
+                        "language": article.meta_lang,
+                        "url": article.canonical_link,
+                        "dump": article.meta_data
+                    },
+                    "source": {
+                        "url": parse_proxy(article.source_url),
+                        "sitename": article.meta_site_name
+                    }
                 },
-                "metadata": {
-                    "keywords": article.meta_keywords,
-                    "description": article.meta_description,
-                    "language": article.meta_lang,
-                    "url": article.canonical_link,
-                    "dump": article.meta_data
-                },
-                "source": {
-                    "url": parse_proxy(article.source_url),
-                    "sitename": article.meta_site_name
-                },
-                "flags": {
-                    "in_graph": False,
-                    "has_nlp": False
-                },
-                "context": {
+                "meta": {
                     "scraper": scraper,
-                    "datetime": datetime.datetime.now(datetime.timezone.utc)
+                    "last_indexed": datetime.datetime.now(datetime.timezone.utc)
                 }
             }
             # store doc in ElasticSearch and grab id
