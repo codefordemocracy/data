@@ -5,6 +5,7 @@ import logging
 import requests
 from google.cloud import secretmanager
 from elasticsearch import Elasticsearch, helpers
+import pytz
 import datetime
 
 # format logs
@@ -31,13 +32,62 @@ def loop(headers, url):
     r = requests.get(url, headers=headers)
     for filing in r.json()['results']:
         key = filing.get('filing_uuid')
+        processed = {
+            "date_submitted": filing.get("dt_posted"),
+            "filing_year": filing.get("filing_year"),
+            "registrant": {
+                "name": filing.get("registrant", {}).get("name"),
+                "description": filing.get("registrant", {}).get("description"),
+                "country": filing.get("registrant", {}).get("country"),
+                "state": filing.get("registrant", {}).get("state"),
+                "senate_id": str(filing.get("registrant", {}).get("id")),
+                "house_id": str(filing.get("registrant", {}).get("house_registrant_id")),
+                "contact": filing.get("registrant", {}).get("contact_name"),
+            },
+            "no_contributions": filing.get("no_contributions"),
+            "url": filing.get("filing_document_url")
+        }
+        if filing.get("pacs") is not None:
+            if len(filing.get("pacs")) > 0:
+                processed["pacs"] = filing.get("pacs")
+        lobbyist = {}
+        if filing.get("lobbyist") is not None:
+            if filing.get("lobbyist", {}).get("id") is not None:
+                lobbyist["id"] = filing.get("lobbyist", {}).get("id")
+            name = [filing.get("lobbyist", {}).get("first_name"), filing.get("lobbyist", {}).get("middle_name"), filing.get("lobbyist", {}).get("last_name"), filing.get("lobbyist", {}).get("suffix")]
+            name = [n for n in name if n is not None]
+            if len(name) > 0:
+                lobbyist["name"] = " ".join(name)
+            if len(lobbyist) > 0:
+                processed["lobbyist"] = lobbyist
+        contributions = []
+        if filing.get("contribution_items") is not None:
+            for c in filing.get("contribution_items"):
+                dt = c.get("date")
+                if dt is not None:
+                    dt = datetime.datetime.strptime(dt, '%Y-%m-%d')
+                    dt = pytz.timezone('US/Eastern').localize(dt)
+                    dt = dt.strftime("%Y-%m-%dT%H:%M:%S%z")
+                contributions.append({
+                    "contribution_type": c.get("contribution_type_display"),
+                    "contributor_name": c.get("contributor_name"),
+                    "payee_name": c.get("payee_name"),
+                    "recipient_name": c.get("honoree_name"),
+                    "amount": float(c.get("amount").replace(',', '')) if c.get("amount") is not None else None,
+                    "date": dt
+                })
+        if len(contributions) > 0:
+            processed["contributions"] = contributions
         actions.append({
                 "_op_type": "index",
                 "_index": index,
                 "_id": key,
                 "_source": {
-                    "filing": filing,
-                    "last_indexed": datetime.datetime.now(datetime.timezone.utc)
+                    "obj": filing,
+                    "processed": processed,
+                    "meta": {
+                        "last_indexed": datetime.datetime.now(datetime.timezone.utc)
+                    }
                 }
             })
     helpers.bulk(es, actions)

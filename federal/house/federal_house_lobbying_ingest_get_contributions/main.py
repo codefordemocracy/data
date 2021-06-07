@@ -33,7 +33,6 @@ firestore_idx_name = 'current-year-idx'
 # firestore_idx_name = 'historical-idx'
 house_api_url = 'https://clerkapi.house.gov/Elastic/search'
 xml_report_base_url = 'https://disclosurespreview.house.gov/lc/lcxmlrelease/{report_year}/{report_type_code}/{_id}.xml'
-index = 'federal_house_lobbying_contributions'
 
 # helper function to generate url to xml
 def url_from_hit(hit, amendment):
@@ -195,7 +194,7 @@ def federal_house_lobbying_ingest_get_contributions(message, context):
                 failed_urls.append(file_url)
                 continue
             json_from_dict = json.loads(json.dumps(dict_from_xml["CONTRIBUTIONDISCLOSURE"]))
-            if "signedDate" in json_from_dict:
+            if json_from_dict.get("signedDate") is not None:
                 try:
                     json_from_dict["signedDate"] = datetime.datetime.strptime(json_from_dict["signedDate"], '%m/%d/%Y %I:%M:%S %p')
                 except:
@@ -204,15 +203,109 @@ def federal_house_lobbying_ingest_get_contributions(message, context):
                     except:
                         raise
                 json_from_dict["signedDate"] = pytz.timezone('US/Eastern').localize(json_from_dict["signedDate"])
-                json_from_dict["signedDate"] = json_from_dict["signedDate"].strftime("%Y-%m-%dT%H:%M:%SZ")
+                json_from_dict["signedDate"] = json_from_dict["signedDate"].strftime("%Y-%m-%dT%H:%M:%S%z")
+            if json_from_dict.get("pacs") is not None:
+                if json_from_dict.get("pacs", {}).get("pac") is not None:
+                    if not isinstance(json_from_dict["pacs"]["pac"], list):
+                        json_from_dict["pacs"]["pac"] = [json_from_dict["pacs"]["pac"]]
+                if json_from_dict.get("pacs", {}).get("name") is not None:
+                    if json_from_dict["pacs"]["pac"] is not None:
+                        json_from_dict["pacs"]["pac"].append({"name": json_from_dict["pacs"].pop("name")})
+                    else:
+                        json_from_dict["pacs"]["pac"] = [{"name": json_from_dict["pacs"].pop("name")}]
+            if json_from_dict.get("contributions") is not None:
+                if json_from_dict.get("contributions", {}).get("contribution") is not None:
+                    if not isinstance(json_from_dict["contributions"]["contribution"], list):
+                        json_from_dict["contributions"]["contribution"] = [json_from_dict["contributions"]["contribution"]]
+            processed = {
+                "date_submitted": json_from_dict.get("signedDate"),
+                "filing_year": int(json_from_dict.get("reportYear")),
+                "filing_type": json_from_dict.get("reportType"),
+                "registrant": {
+                    "name": json_from_dict.get("organizationName"),
+                    "country": json_from_dict.get("country"),
+                    "state": json_from_dict.get("state"),
+                    "senate_id": json_from_dict.get("senateRegID"),
+                    "house_id": json_from_dict.get("houseRegID"),
+                    "contact": json_from_dict.get("contactName"),
+                },
+                "no_contributions": json_from_dict.get("noContributions"),
+                "url": "https://disclosurespreview.house.gov/lc/lcxmlrelease/" + json_from_dict.get("reportYear") + "/" + json_from_dict.get("reportType") + "/" + hit["_id"] + ".xml"
+            }
+            if json_from_dict.get("pacs") is not None:
+                pacs = [p.get("name") for p in json_from_dict.get("pacs", {}).get("pac", []) if p is not None]
+                pacs = [p for p in pacs if p is not None]
+                if len(pacs) > 0:
+                    processed["pacs"] = ", ".join(pacs)
+            lobbyist = {}
+            if json_from_dict.get("lobbyistID") is not None:
+                lobbyist["id"] = json_from_dict.get("lobbyistID")
+            name = [json_from_dict.get("lobbyistFirstName"), json_from_dict.get("lobbyistMiddleName"), json_from_dict.get("lobbyistLastName"), json_from_dict.get("lobbyistSuffix")]
+            name = [n for n in name if n is not None]
+            if len(name) > 0:
+                lobbyist["name"] = " ".join(name)
+            if len(lobbyist) > 0:
+                processed["lobbyist"] = lobbyist
+            contributions = []
+            if json_from_dict.get("contributions") is not None:
+                if json_from_dict.get("contributions", {}).get("contribution") is not None:
+                    for c in json_from_dict.get("contributions", {}).get("contribution"):
+                        dt = c.get("date")
+                        if dt == "02/31/2008":
+                            dt = "02/29/2008"
+                        if dt is not None:
+                            try:
+                                dt = datetime.datetime.strptime(dt, '%m/%d/%Y')
+                            except:
+                                try:
+                                    dt = datetime.datetime.strptime(dt, '%m/%d/%y')
+                                except:
+                                    try:
+                                        dt = datetime.datetime.strptime(dt, '%m-%d-%Y')
+                                    except:
+                                        try:
+                                            dt = datetime.datetime.strptime(dt, '%m-%d-%y')
+                                        except:
+                                            try:
+                                                dt = datetime.datetime.strptime(dt, '%m.%d.%Y')
+                                            except:
+                                                try:
+                                                    dt = datetime.datetime.strptime(dt, '%m.%d.%y')
+                                                except:
+                                                    try:
+                                                        dt = datetime.datetime.strptime(dt, '%m%d%Y')
+                                                    except:
+                                                        try:
+                                                            dt = datetime.datetime.strptime(dt, '%m%d%y')
+                                                        except:
+                                                            try:
+                                                                dt = datetime.datetime.strptime(dt, '%m/%d %Y')
+                                                            except:
+                                                                continue
+                            dt = pytz.timezone('US/Eastern').localize(dt)
+                            dt = dt.strftime("%Y-%m-%dT%H:%M:%S%z")
+                        if c.get("type") is not None or c.get("contributorName") is not None or c.get("payeeName") is not None or c.get("recipientName") is not None or c.get("amount") is not None or dt is not None:
+                            contributions.append({
+                                "contribution_type": c.get("type"),
+                                "contributor_name": c.get("contributorName"),
+                                "payee_name": c.get("payeeName"),
+                                "recipient_name": c.get("recipientName"),
+                                "amount": float(c.get("amount").replace(',', '').replace('$', '').replace(' ', '')) if c.get("amount") is not None else None,
+                                "date": dt
+                            })
+            if len(contributions) > 0:
+                processed["contributions"] = contributions
             actions.append(
                 {
                     '_op_type': 'index',
-                    '_index': index,
+                    '_index': 'federal_house_lobbying_contributions',
                     '_id': hit['_id'],
                     '_source': {
-                        'filing': json_from_dict,
-                        'last_indexed': datetime.datetime.now(datetime.timezone.utc)
+                        'obj': json_from_dict,
+                        'processed': processed,
+                        'meta': {
+                            'last_indexed': datetime.datetime.now(datetime.timezone.utc)
+                        }
                     }
                 }
             )

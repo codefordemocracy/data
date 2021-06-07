@@ -34,7 +34,6 @@ firestore_idx_name = 'current-year-idx'
 # firestore_idx_name = '2000-2007-idx'
 house_api_url = 'https://clerkapi.house.gov/Elastic/search'
 xml_report_base_url = 'https://disclosurespreview.house.gov/ld/ldxmlrelease/{report_year}/{report_type_code}/{_id}.xml'
-index = 'federal_house_lobbying_disclosures'
 
 # helper function to generate url to xml
 def url_from_hit(hit):
@@ -245,21 +244,142 @@ def federal_house_lobbying_ingest_get_disclosures(message, context):
                     except:
                         raise
                 json_from_dict["signedDate"] = pytz.timezone('US/Eastern').localize(json_from_dict["signedDate"])
-                json_from_dict["signedDate"] = json_from_dict["signedDate"].strftime("%Y-%m-%dT%H:%M:%SZ")
-            if "alis" in json_from_dict:
-                if "ali_info" in json_from_dict["alis"]:
-                    if (isinstance(json_from_dict["alis"]["ali_info"], list)):
-                        json_from_dict["alis"]["ali_info"] = json_from_dict["alis"]["ali_info"][0]
-                    if "federal_agencies" in json_from_dict["alis"]["ali_info"]:
-                        json_from_dict["alis"]["ali_info"]["federal_agencies"] = json.dumps(json_from_dict["alis"]["ali_info"]["federal_agencies"])
+                json_from_dict["signedDate"] = json_from_dict["signedDate"].strftime("%Y-%m-%dT%H:%M:%S%z")
+            if json_from_dict.get("effectiveDate") is not None:
+                try:
+                    json_from_dict["effectiveDate"] = datetime.datetime.strptime(json_from_dict["effectiveDate"], '%m/%d/%Y %I:%M:%S %p')
+                except:
+                    try:
+                        json_from_dict["effectiveDate"] = datetime.datetime.strptime(json_from_dict["effectiveDate"], '%m/%d/%Y')
+                    except:
+                        try:
+                            json_from_dict["effectiveDate"] = datetime.datetime.strptime(json_from_dict["effectiveDate"], '%m/%d/%y')
+                        except:
+                            try:
+                                json_from_dict["effectiveDate"] = datetime.datetime.strptime(json_from_dict["effectiveDate"], '%m-%d-%Y')
+                            except:
+                                try:
+                                    json_from_dict["effectiveDate"] = datetime.datetime.strptime(json_from_dict["effectiveDate"], '%m-%d-%y')
+                                except:
+                                    try:
+                                        json_from_dict["effectiveDate"] = datetime.datetime.strptime(json_from_dict["effectiveDate"], '%m.%d.%Y')
+                                    except:
+                                        try:
+                                            json_from_dict["effectiveDate"] = datetime.datetime.strptime(json_from_dict["effectiveDate"], '%m.%d.%y')
+                                        except:
+                                            try:
+                                                json_from_dict["effectiveDate"] = datetime.datetime.strptime(json_from_dict["effectiveDate"], '%m%d%Y')
+                                            except:
+                                                try:
+                                                    json_from_dict["effectiveDate"] = datetime.datetime.strptime(json_from_dict["effectiveDate"], '%m%d%y')
+                                                except:
+                                                    raise
+                json_from_dict["effectiveDate"] = pytz.timezone('US/Eastern').localize(json_from_dict["effectiveDate"])
+                json_from_dict["effectiveDate"] = json_from_dict["effectiveDate"].strftime("%Y-%m-%dT%H:%M:%S%z")
+            if json_from_dict.get("terminationDate") is not None:
+                try:
+                    json_from_dict["terminationDate"] = datetime.datetime.strptime(json_from_dict["terminationDate"], '%m/%d/%Y %I:%M:%S %p')
+                except:
+                    try:
+                        json_from_dict["terminationDate"] = datetime.datetime.strptime(json_from_dict["terminationDate"], '%m/%d/%Y')
+                    except:
+                        try:
+                            json_from_dict["terminationDate"] = datetime.datetime.strptime(json_from_dict["terminationDate"], '%m/%d/%y')
+                        except:
+                            try:
+                                json_from_dict["terminationDate"] = datetime.datetime.strptime(json_from_dict["terminationDate"], '%m-%d-%Y')
+                            except:
+                                try:
+                                    json_from_dict["terminationDate"] = datetime.datetime.strptime(json_from_dict["terminationDate"], '%m-%d-%y')
+                                except:
+                                    try:
+                                        json_from_dict["terminationDate"] = datetime.datetime.strptime(json_from_dict["terminationDate"], '%m.%d.%Y')
+                                    except:
+                                        try:
+                                            json_from_dict["terminationDate"] = datetime.datetime.strptime(json_from_dict["terminationDate"], '%m.%d.%y')
+                                        except:
+                                            try:
+                                                json_from_dict["terminationDate"] = datetime.datetime.strptime(json_from_dict["terminationDate"], '%m%d%Y')
+                                            except:
+                                                try:
+                                                    json_from_dict["terminationDate"] = datetime.datetime.strptime(json_from_dict["terminationDate"], '%m%d%y')
+                                                except:
+                                                    raise
+                json_from_dict["terminationDate"] = pytz.timezone('US/Eastern').localize(json_from_dict["terminationDate"])
+                json_from_dict["terminationDate"] = json_from_dict["terminationDate"].strftime("%Y-%m-%dT%H:%M:%S%z")
+            if json_from_dict.get("alis", {}).get("ali_info") is not None:
+                if not isinstance(json_from_dict["alis"]["ali_info"], list):
+                    json_from_dict["alis"]["ali_info"] = [json_from_dict["alis"]["ali_info"]]
+                for i in json_from_dict["alis"]["ali_info"]:
+                    if i.get("federal_agencies") is not None:
+                        i["federal_agencies"] = json.dumps(i["federal_agencies"])
+            processed = {
+                "date_submitted": json_from_dict.get("signedDate"),
+                "effective_date": json_from_dict.get("effectiveDate"),
+                "termination_date": json_from_dict.get("terminationDate"),
+                "filing_year": int(json_from_dict.get("reportYear")),
+                "filing_type": json_from_dict.get("reportType"),
+                "client": {
+                    "name": json_from_dict.get("clientName"),
+                    "description": json_from_dict.get("clientGeneralDescription"),
+                    "country": json_from_dict.get("clientCountry"),
+                    "state": json_from_dict.get("clientState"),
+                    "senate_id": json_from_dict.get("senateID").split("-")[1] if "-" in json_from_dict.get("senateID") else json_from_dict.get("senateID"),
+                },
+                "registrant": {
+                    "name": json_from_dict.get("organizationName"),
+                    "description": json_from_dict.get("registrantGeneralDescription"),
+                    "country": json_from_dict.get("country"),
+                    "state": json_from_dict.get("state"),
+                    "senate_id": json_from_dict.get("senateID").split("-")[0] if "-" in json_from_dict.get("senateID") else json_from_dict.get("senateID"),
+                    "house_id": json_from_dict.get("houseID"),
+                    "contact": json_from_dict.get("printedName"),
+                },
+                "url": "https://disclosurespreview.house.gov/ld/ldxmlrelease/" + json_from_dict.get("reportYear") + "/" + json_from_dict.get("reportType") + "/" + hit["_id"] + ".xml"
+            }
+            issues = []
+            activities = []
+            lobbyists = []
+            coverage = []
+            if json_from_dict.get("alis", {}).get("ali_Code") is not None:
+                issues = [{"code": c} for c in json_from_dict["alis"]["ali_Code"] if c is not None]
+            if json_from_dict.get("alis", {}).get("ali_info") is not None:
+                for i in json_from_dict.get("alis", {}).get("ali_info"):
+                    if i.get("issueAreaCode") is not None:
+                        issues.append({"code": i.get("issueAreaCode")})
+                    if i.get("specific_issues", {}).get("description") is not None:
+                        activities.append(i.get("specific_issues", {}).get("description"))
+            if json_from_dict.get("specific_issues") is not None:
+                activities.append(json_from_dict["specific_issues"])
+            if json_from_dict.get("lobbyists", {}).get("lobbyist") is not None:
+                for lob in json_from_dict["lobbyists"]["lobbyist"]:
+                    name = [lob.get("lobbyistFirstName"), lob.get("lobbyistLastName"), lob.get("lobbyistSuffix")]
+                    name = [n for n in name if n is not None]
+                    if len(name) > 0:
+                        lobbyists.append({
+                            "name": " ".join(name)
+                        })
+                    if lob.get("coveredPosition") is not None:
+                        coverage.append(lob.get("coveredPosition"))
+            if len(issues) > 0:
+                processed["issues"] = issues
+            if len(activities) > 0:
+                processed["activities"] = activities
+            if len(lobbyists) > 0:
+                processed["lobbyists"] = lobbyists
+            if len(coverage) > 0:
+                processed["coverage"] = coverage
             actions.append(
                 {
                     '_op_type': 'index',
-                    '_index': index,
+                    '_index': 'federal_house_lobbying_disclosures',
                     '_id': hit['_id'],
                     '_source': {
-                        'filing': json_from_dict,
-                        'last_indexed': datetime.datetime.now(datetime.timezone.utc)
+                        'obj': json_from_dict,
+                        'processed': processed,
+                        'meta': {
+                            'last_indexed': datetime.datetime.now(datetime.timezone.utc)
+                        }
                     }
                 }
             )
