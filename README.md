@@ -83,6 +83,11 @@ The work of downloading, transforming, and loading datasets is handled by these 
 * **federal_fec_compute_load_graph**: loads the FEC data into Neo4j
 * **federal_fec_ingest_unzip_gcs**: automatically unzips .zip files in Google Cloud Storage
 
+#### IRS
+
+* **federal_irs_ingest_download_990s_index**: downloads index file for 990s from IRS AWS server
+* **federal_irs_ingest_get_990s**: indexes IRS 990s into ElasticSearch
+
 #### House
 
 * **federal_house_lobbying_ingest_get_disclosures**: indexes House lobbying disclosures into ElasticSearch
