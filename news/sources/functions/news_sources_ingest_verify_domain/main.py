@@ -17,11 +17,11 @@ db = firestore.Client()
 # checks domains to see if the DNS resolves and adds to Firestore
 def news_sources_ingest_verify_domain(message, context):
 
-    # set up Firestore refs
-    ref = db.collection('news').document('sources').collection('scraped').document(doc['domain'])
-
     # get the document with the domain from the Pub/Sub message
     doc = json.loads(message['attributes']['doc'])
+
+    # set up Firestore refs
+    ref = db.collection('news').document('sources').collection('scraped').document(doc['domain'])
 
     doc["host"] = ''
     # check the domain for host a few times
