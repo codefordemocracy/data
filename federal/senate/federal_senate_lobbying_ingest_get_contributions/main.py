@@ -35,6 +35,7 @@ def loop(headers, url):
         processed = {
             "date_submitted": filing.get("dt_posted"),
             "filing_year": filing.get("filing_year"),
+            "filing_type": filing.get("filing_type"),
             "registrant": {
                 "name": filing.get("registrant", {}).get("name"),
                 "description": filing.get("registrant", {}).get("description"),
