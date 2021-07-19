@@ -167,10 +167,10 @@ def twitter_ingest_primary_get_timeline(message, context):
                 actions.append({
                     "_op_type": "index",
                     "_index": "twitter_retweets",
-                    "_id": str(record["source"])+"_"+str(record["target"]),
+                    "_id": str(record["source"]["user"]["id_str"])+"_"+str(record["target"]["obj"]["id"]),
                     "_source": record
                 })
-                logger.info(' - '.join(['ADDED TO ELASTICSEARCH ACTIONS', 'retweet', str(record["source"]), str(record["target"])]))
+                logger.info(' - '.join(['ADDED TO ELASTICSEARCH ACTIONS', 'retweet', str(record["source"]["user"]["id_str"]), str(record["target"]["obj"]["id"])]))
 
             # process quote relationships
             for record in records["quotes"]:

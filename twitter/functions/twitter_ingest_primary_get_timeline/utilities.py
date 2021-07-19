@@ -89,11 +89,15 @@ def parse_tweets(tweet):
     if main["is_retweet"] is True:
         tweets.append(format_naked_tweet(main["retweet"]["id"]))
         users.append(format_naked_user(main["retweet"]["user_id"]))
+        main["obj"]["text"] = tweet.retweeted_status.full_text
         retweets.append(format_naked_relationship({
-            "source": main["user_id"],
-            "target": main["retweet"]["id"],
-            "created_at": main["obj"]["created_at"],
-            "retweet_id": tweet.id_str,
+            "source": {
+                "user": tweet.user._json
+                },
+            "target": {
+                "user": tweet.retweeted_status.user._json,
+                "obj": main["obj"]
+                },
             "in_graph": False
         }))
     # process quote
