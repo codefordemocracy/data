@@ -25,7 +25,7 @@ def format_naked_user(user_id):
 
 # utility formatting function
 def format_naked_relationship(record):
-    record["last_updated"] = datetime.datetime.now(datetime.timezone.utc)
+    # record["last_updated"] = datetime.datetime.now(datetime.timezone.utc)
     return record
 
 # create the tweet doc for elasticsearch
@@ -98,7 +98,10 @@ def parse_tweets(tweet):
                 "user": tweet.retweeted_status.user._json,
                 "obj": main["obj"]
                 },
-            "in_graph": False
+            "meta": {
+                "in_graph": False,
+                "last_updated": datetime.datetime.now(datetime.timezone.utc)
+            }
         })
         retweet['source']['user']['created_at'] = tweet.user.created_at
         retweet['target']['user']['created_at'] = tweet.retweeted_status.user.created_at
@@ -119,7 +122,8 @@ def parse_tweets(tweet):
         quotes.append(format_naked_relationship({
             "source": main["obj"]["id"],
             "target": main["quote"]["id"],
-            "created_at": main["obj"]["created_at"]
+            "created_at": main["obj"]["created_at"],
+            "last_updated": datetime.datetime.now(datetime.timezone.utc)
         }))
     # process reply
     if tweet.in_reply_to_status_id_str is not None:
@@ -136,7 +140,8 @@ def parse_tweets(tweet):
         replies.append(format_naked_relationship({
             "source": main["obj"]["id"],
             "target": main["reply"]["id"],
-            "created_at": main["obj"]["created_at"]
+            "created_at": main["obj"]["created_at"],
+            "last_updated": datetime.datetime.now(datetime.timezone.utc)
         }))
     # return all the objects
     return {
