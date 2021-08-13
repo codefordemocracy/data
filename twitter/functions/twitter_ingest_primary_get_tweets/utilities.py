@@ -93,11 +93,13 @@ def parse_tweets(tweet):
         retweet = format_naked_relationship({
             "source": {
                 "user": tweet.user._json,
-                "obj": main["obj"]
+                "obj": {
+                    "id": tweet.retweeted_status.id,
+                    "created_at": tweet.retweeted_status.created_at
                 },
             "target": {
                 "user": tweet.retweeted_status.user._json,
-                "obj": tweet.retweeted_status._json
+                "obj": main["obj"]
                 },
             "meta": {
                 "in_graph": False,
@@ -105,9 +107,8 @@ def parse_tweets(tweet):
             }
         })
         retweet['source']['user']['created_at'] = tweet.user.created_at
-        retweet['source']['obj']['entities'] = tweet.entities
         retweet['target']['user']['created_at'] = tweet.retweeted_status.user.created_at
-        retweet['target']['obj']['created_at'] = tweet.retweeted_status.created_at
+        retweet['target']['obj']['entities'] = tweet.entities
         retweets.append(retweet)
     # process quote
     try:
