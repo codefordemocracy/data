@@ -2,6 +2,7 @@ import logging
 from google.cloud import secretmanager
 from google.cloud import firestore
 from google.cloud import pubsub
+from elasticsearch import Elasticsearch
 import datetime
 import json
 import newspaper
@@ -14,10 +15,14 @@ logger = logging.getLogger(__name__)
 
 # get secrets
 secrets = secretmanager.SecretManagerServiceClient()
+elastic_host = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/elastic_host/versions/1"}).payload.data.decode()
+elastic_username_data = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/elastic_username_data/versions/1"}).payload.data.decode()
+elastic_password_data = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/elastic_password_data/versions/1"}).payload.data.decode()
 scraperapi_api_key = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/scraperapi_api_key/versions/1"}).payload.data.decode()
 gcp_project_id = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/gcp_project_id/versions/1"}).payload.data.decode()
 
 # connect to resources
+es = Elasticsearch(elastic_host, http_auth=(elastic_username_data, elastic_password_data), scheme="https", port=443)
 db = firestore.Client()
 publisher = pubsub.PublisherClient()
 
@@ -42,20 +47,21 @@ def parse_proxy(url):
         return url.split('&url=',1)[1]
     return url
 
-# creates paper from each domain, queues batches of article urls with a scraper setting, and notes the scraper used in Firestore
+# creates paper from each domain, queues batches of article urls with a scraper setting, and notes the scraper used in ElasticSearch
 def news_articles_ingest_get_paper(message, context):
 
     # get domain from the Pub/Sub message
     domain = message['attributes']['domain']
 
     # set up Firestore refs
-    domain_ref = db.collection('news').document('sources').collection('scraped').document(domain)
     queue_ref = db.collection('news').document('queues').collection('crawler').document(domain)
-    doc = domain_ref.get().to_dict()
+
+    # get context for domain
+    doc = es.get(index="news_sources", id=domain)
 
     # if there's not a saved scraper or it's Saturday morning, we re-check every source for scrapability
     # check potential scrapers for each domain by iterating from least to most expensive calls
-    if 'scraper' not in doc or (datetime.datetime.now(datetime.timezone.utc).weekday() == 5 and datetime.datetime.now(datetime.timezone.utc).hour < 12):
+    if 'scraper' not in doc.get("context", {}) or (datetime.datetime.now(datetime.timezone.utc).weekday() == 5 and datetime.datetime.now(datetime.timezone.utc).hour < 12):
         # basic newspaper call
         logger.info(' - '.join(['TRYING NEWSPAPER BASIC SCRAPER', domain]))
         paper = newspaperbasic(domain)
@@ -109,9 +115,8 @@ def news_articles_ingest_get_paper(message, context):
         publisher.publish(topic, b'extract articles from this domain', domain=domain)
         logger.info(' - '.join(['COMPLETED', 'domain sent to news_articles_ingest_get_articles queue', domain]))
 
-    # update Firestore with the scraper
-    doc['scraper'] = scraper
-    domain_ref.set(doc, merge=True)
+    # update ElasticSearch with the scraper
+    es.update(index="news_sources", id=domain, body={"doc": {"context": {"scraper": scraper}}})
     logger.info(' - '.join(['COMPLETED', 'scraper settings updated', domain, scraper]))
 
     # return the domain, size, and scraper

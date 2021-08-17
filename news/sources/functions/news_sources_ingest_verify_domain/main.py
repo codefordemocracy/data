@@ -1,7 +1,8 @@
 import logging
 import json
 import socket
-from google.cloud import firestore
+from google.cloud import secretmanager
+from elasticsearch import Elasticsearch
 import time
 import datetime
 
@@ -11,19 +12,21 @@ logging.basicConfig(format=formatter, level=logging.DEBUG)
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
-# connect to resources
-db = firestore.Client()
+# get secrets
+secrets = secretmanager.SecretManagerServiceClient()
+elastic_host = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/elastic_host/versions/1"}).payload.data.decode()
+elastic_username_data = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/elastic_username_data/versions/1"}).payload.data.decode()
+elastic_password_data = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/elastic_password_data/versions/1"}).payload.data.decode()
 
-# checks domains to see if the DNS resolves and adds to Firestore
+# connect to resources
+es = Elasticsearch(elastic_host, http_auth=(elastic_username_data, elastic_password_data), scheme="https", port=443)
+
+# checks domains to see if the DNS resolves and adds to Elasticsearch
 def news_sources_ingest_verify_domain(message, context):
 
     # get the document with the domain from the Pub/Sub message
     doc = json.loads(message['attributes']['doc'])
 
-    # set up Firestore refs
-    ref = db.collection('news').document('sources').collection('scraped').document(doc['domain'])
-
-    doc["host"] = ''
     # check the domain for host a few times
     for i in range(12):
         try:
@@ -45,10 +48,13 @@ def news_sources_ingest_verify_domain(message, context):
             logger.error(' - '.join(['UNKNOWN ERROR RESOLVING HOST', doc['domain'], str(e)]))
             raise
 
-    doc["last_updated"] = datetime.datetime.now(datetime.timezone.utc)
-
-    # update Cloud Firestore with doc, overwriting attributes or adding new doc
-    ref.set(doc, merge=True)
-    logger.info(' - '.join(['COMPLETED', 'updated Firestore document', doc['domain']]))
+    record = {
+        "extracted": doc,
+        "context": {
+            "last_updated": datetime.datetime.now(datetime.timezone.utc)
+        }
+    }
+    es.index(index="news_sources", id=doc["domain"], body=record)
+    logger.info(' - '.join(['COMPLETED', 'updated Elasticsearch document', doc['domain']]))
 
     return doc

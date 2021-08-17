@@ -32,14 +32,14 @@ The work of downloading, transforming, and loading datasets is handled by these 
 * **news_sources_ingest_run_spiders**: kicks off the allsides and mediabiasfactcheck spiders on Scrapy Cloud
 * **news_sources_ingest_check_spiders**: polls the spiders every 60 seconds to check for completion
 * **news_sources_ingest_get_crawls**: downloads the data from the crawls from Scrapy Cloud and queues records for processing
-* **news_sources_ingest_verify_domain**: checks that each domain is still alive and adds to Cloud Firestore
+* **news_sources_ingest_verify_domain**: checks domains to see if the DNS resolves and adds to Elasticsearch
 * **news_sources_compute_load_graph**: loads sources into Neo4j
 * **news_sources_compute_merge_domains**: connects domains with sources
 
 #### Articles
 
-* **news_articles_ingest_queue_domains**: queues list of active domains from Cloud Firestore
-* **news_articles_ingest_get_paper**: queues article urls for each domain and logs the scraper used in Firestore
+* **news_articles_ingest_queue_domains**: queues list of active domains from Elasticsearch
+* **news_articles_ingest_get_paper**: queues article urls for each domain and logs the scraper used in ElasticSearch
 * **news_articles_ingest_get_articles**: scrapes articles and sends to ElasticSearch if the article is new, updates the Cloud Firestore list of articles
 * **news_articles_ingest_process_stragglers**: queues remaining article urls for domains that errored out
 * **news_articles_ingest_queue_duplicates**: iterates through ElasticSearch and queues batches of duplicate articles

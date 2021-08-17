@@ -101,42 +101,35 @@ def news_sources_ingest_get_crawls(message, context):
     df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('least biased'), 'MBFC Bias Score'] = 0
     df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('right-center bias'), 'MBFC Bias Score'] = 1
     df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('right bias'), 'MBFC Bias Score'] = 2
-    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('questionable source'), 'Factually Questionable Flag'] = 1
-    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('conspiracy-pseudoscience'), 'Factually Questionable Flag'] = 1
-    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('conspiracy-pseudoscience'), 'Conspiracy Flag'] = 1
-    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Tags'].str.contains('hate'), 'Hate Group Flag'] = 1
-    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Tags'].str.contains('propaganda'), 'Propaganda Flag'] = 1
-    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('satire'), 'Satire Flag'] = 1
-    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['Factually Questionable Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('left') | df_mediabiasfactcheck['Tags'].str.contains('left')), 'MBFC Bias Score'] = -3
-    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['Factually Questionable Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('right') | df_mediabiasfactcheck['Tags'].str.contains('right')), 'MBFC Bias Score'] = 3
-    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['Conspiracy Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('left') | df_mediabiasfactcheck['Tags'].str.contains('left')), 'MBFC Bias Score'] = -3
-    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['Conspiracy Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('right') | df_mediabiasfactcheck['Tags'].str.contains('right')), 'MBFC Bias Score'] = 3
-    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['Hate Group Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('left') | df_mediabiasfactcheck['Tags'].str.contains('left')), 'MBFC Bias Score'] = -3
-    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['Hate Group Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('right') | df_mediabiasfactcheck['Tags'].str.contains('right')), 'MBFC Bias Score'] = 3
-    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['Propaganda Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('left') | df_mediabiasfactcheck['Tags'].str.contains('left')), 'MBFC Bias Score'] = -3
-    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['Propaganda Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('right') | df_mediabiasfactcheck['Tags'].str.contains('right')), 'MBFC Bias Score'] = 3
-    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Satire Flag'] == 1, 'MBFC Bias Score'] = None
+    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('questionable source'), 'MBFC Factually Questionable Flag'] = 1
+    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('conspiracy-pseudoscience'), 'MBFC Factually Questionable Flag'] = 1
+    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('conspiracy-pseudoscience'), 'MBFC Conspiracy Flag'] = 1
+    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Tags'].str.contains('hate'), 'MBFC Hate Group Flag'] = 1
+    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Tags'].str.contains('propaganda'), 'MBFC Propaganda Flag'] = 1
+    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['Bias'].str.contains('satire'), 'MBFC Satire Flag'] = 1
+    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['MBFC Factually Questionable Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('left') | df_mediabiasfactcheck['Tags'].str.contains('left')), 'MBFC Bias Score'] = -3
+    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['MBFC Factually Questionable Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('right') | df_mediabiasfactcheck['Tags'].str.contains('right')), 'MBFC Bias Score'] = 3
+    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['MBFC Conspiracy Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('left') | df_mediabiasfactcheck['Tags'].str.contains('left')), 'MBFC Bias Score'] = -3
+    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['MBFC Conspiracy Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('right') | df_mediabiasfactcheck['Tags'].str.contains('right')), 'MBFC Bias Score'] = 3
+    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['MBFC Hate Group Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('left') | df_mediabiasfactcheck['Tags'].str.contains('left')), 'MBFC Bias Score'] = -3
+    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['MBFC Hate Group Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('right') | df_mediabiasfactcheck['Tags'].str.contains('right')), 'MBFC Bias Score'] = 3
+    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['MBFC Propaganda Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('left') | df_mediabiasfactcheck['Tags'].str.contains('left')), 'MBFC Bias Score'] = -3
+    df_mediabiasfactcheck.loc[(df_mediabiasfactcheck['MBFC Propaganda Flag'] == 1) & (df_mediabiasfactcheck['Images'].str.contains('right') | df_mediabiasfactcheck['Tags'].str.contains('right')), 'MBFC Bias Score'] = 3
+    df_mediabiasfactcheck.loc[df_mediabiasfactcheck['MBFC Satire Flag'] == 1, 'MBFC Bias Score'] = None
 
     # create master list of sources and bias ratings
     df_allsides = df_allsides[['Domain', 'AllSides Source', 'AllSides Bias Score']]
-    df_mediabiasfactcheck = df_mediabiasfactcheck[['Domain', 'MBFC Source', 'MBFC Bias Score', 'Factually Questionable Flag', 'Conspiracy Flag', 'Satire Flag', 'Hate Group Flag', 'Propaganda Flag']]
+    df_mediabiasfactcheck = df_mediabiasfactcheck[['Domain', 'MBFC Source', 'MBFC Bias Score', 'MBFC Factually Questionable Flag', 'MBFC Conspiracy Flag', 'MBFC Satire Flag', 'MBFC Hate Group Flag', 'MBFC Propaganda Flag']]
     df_sources = pd.merge(df_allsides, df_mediabiasfactcheck, on='Domain', how='outer')
     df_sources['Source'] = df_sources['AllSides Source']
     df_sources.loc[df_sources['MBFC Source'].isnull() == False, 'Source'] = df_sources['MBFC Source']
-    df_sources['Bias Score'] = df_sources[['AllSides Bias Score', 'MBFC Bias Score']].mean(axis=1)
-    df_sources['Factually Questionable Flag'] = df_sources['Factually Questionable Flag'].fillna(0)
-    df_sources['Conspiracy Flag'] = df_sources['Conspiracy Flag'].fillna(0)
-    df_sources['Satire Flag'] = df_sources['Satire Flag'].fillna(0)
-    df_sources['Hate Group Flag'] = df_sources['Hate Group Flag'].fillna(0)
-    df_sources['Propaganda Flag'] = df_sources['Propaganda Flag'].fillna(0)
-    df_sources = df_sources[['Domain', 'Source', 'Bias Score', 'Factually Questionable Flag', 'Conspiracy Flag', 'Satire Flag', 'Hate Group Flag', 'Propaganda Flag']]
-    df_sources = df_sources.groupby(['Domain', 'Source']).mean().reset_index()
-    df_sources['Bias Score'] = df_sources['Bias Score'].apply(lambda x: x if np.isnan(x) else round(x))
-    df_sources['Factually Questionable Flag'] = df_sources['Factually Questionable Flag'].apply(lambda x: round(x))
-    df_sources['Conspiracy Flag'] = df_sources['Conspiracy Flag'].apply(lambda x: round(x))
-    df_sources['Satire Flag'] = df_sources['Satire Flag'].apply(lambda x: round(x))
-    df_sources['Hate Group Flag'] = df_sources['Hate Group Flag'].apply(lambda x: round(x))
-    df_sources['Propaganda Flag'] = df_sources['Propaganda Flag'].apply(lambda x: round(x))
+    df_sources['AllSides Bias Score'] = df_sources['AllSides Bias Score'].fillna("")
+    df_sources['MBFC Bias Score'] = df_sources['MBFC Bias Score'].fillna("")
+    df_sources['MBFC Factually Questionable Flag'] = df_sources['MBFC Factually Questionable Flag'].fillna(0)
+    df_sources['MBFC Conspiracy Flag'] = df_sources['MBFC Conspiracy Flag'].fillna(0)
+    df_sources['MBFC Satire Flag'] = df_sources['MBFC Satire Flag'].fillna(0)
+    df_sources['MBFC Hate Group Flag'] = df_sources['MBFC Hate Group Flag'].fillna(0)
+    df_sources['MBFC Propaganda Flag'] = df_sources['MBFC Propaganda Flag'].fillna(0)
 
     # sort final list of sources
     df_sources = df_sources.sort_values(by=['Domain'])
@@ -152,16 +145,23 @@ def news_sources_ingest_get_crawls(message, context):
     for index, row in df_sources.iterrows():
         doc = {
             "name": row["Source"],
-            "domain": row["Domain"],
-            "bias_score": row["Bias Score"],
-            "factually_questionable_flag": row["Factually Questionable Flag"],
-            "conspiracy_flag": row["Conspiracy Flag"],
-            "satire_flag": row["Satire Flag"],
-            "hate_group_flag": row["Hate Group Flag"],
-            "propaganda_flag": row["Propaganda Flag"]
+            "domain": row["Domain"]
         }
+        if row["AllSides Bias Score"] != "":
+            doc["allsides"] = {
+                "bias_score": row["AllSides Bias Score"]
+            }
+        if row["MBFC Bias Score"] != "":
+            doc["mediabiasfactcheck"] = {
+                "bias_score": row["MBFC Bias Score"],
+                "factually_questionable_flag": row["MBFC Factually Questionable Flag"],
+                "conspiracy_flag": row["MBFC Conspiracy Flag"],
+                "satire_flag": row["MBFC Satire Flag"],
+                "hate_group_flag": row["MBFC Hate Group Flag"],
+                "propaganda_flag": row["MBFC Propaganda Flag"]
+            }
         publisher.publish(topic, b'source data obtained', doc=json.dumps(doc))
-    logger.info(' - '.join(['COMPLETED', 'sources sent to news_sources_ingest_verify_domain queue']))
+    logger.info(' - '.join(['COMPLETED', 'sources sent to news_sources_ingest_verify_domain queue', str(len(df_sources.index))]))
 
     # return the number of processed sources
     return len(df_sources.index)
