@@ -1,5 +1,0 @@
-google-cloud-secret-manager==2.2.0
-google-cloud-firestore==2.0.2
-tweepy==3.8.0
-azure-cosmosdb-table==1.0.5
-elasticsearch>=7.0.0,<8.0.0

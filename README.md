@@ -57,11 +57,9 @@ The work of downloading, transforming, and loading datasets is handled by these 
 
 ### Twitter
 
-* **twitter_ingest_queue_get**: triggers the get functions and deletes users with many errors
-* **twitter_ingest_primary_get_users**: get hydrated user information of a list of user ids and update Firestore, Elasticsearch, and Table Storage
-* **twitter_ingest_primary_get_timeline**: get timeline tweets from user id and update Firestore, Table Storage, and ElasticSearch
-* **twitter_ingest_primary_get_tweets**: get hydrated tweet information of a list of tweet ids and update Firestore, Table Storage, and ElasticSearch
-* **twitter_ingest_secondary_get_users**: get hydrated user information of a list of user ids and update Elasticsearch and Table Storage
+* **twitter_ingest_queue_get**: triggers the get functions
+* **twitter_ingest_get_timeline**: get timeline tweets from user id and update Firestore and ElasticSearch
+* **twitter_ingest_get_tweets**: get a list of tweets and update Firestore and ElasticSearch
 * **twitter_compute_queue_users**: queue loading tweets from primary users
 * **twitter_compute_load_graph**: loads tweets from Elasticsearch into Neo4j
 * **twitter_compute_catchup_graph**: searches Neo4j for tweets that errored out and sends for reloading
