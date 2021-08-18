@@ -46,7 +46,7 @@ def federal_fec_compute_load_elastic_candidates(message, context):
             "_index": "federal_fec_candidates",
             "_id": row["cand_id"],
             "_source": {
-                "obj": {
+                "row": {
                     "cand_id": row["cand_id"],
                     "cand_name": row["cand_name"],
                     "cand_pty_affiliation": row["cand_pty_affiliation"],
@@ -63,7 +63,7 @@ def federal_fec_compute_load_elastic_candidates(message, context):
                     "cand_st": row["cand_st"],
                     "cand_zip": row["cand_zip"]
                 },
-                "meta": {
+                "context": {
                     "last_indexed": datetime.datetime.now(datetime.timezone.utc)
                 }
             }

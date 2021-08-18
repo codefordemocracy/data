@@ -86,7 +86,7 @@ def loop(headers, url):
                 "_source": {
                     "obj": filing,
                     "processed": processed,
-                    "meta": {
+                    "context": {
                         "last_indexed": datetime.datetime.now(datetime.timezone.utc)
                     }
                 }

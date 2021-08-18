@@ -174,7 +174,7 @@ def news_articles_ingest_get_articles(message, context):
                         "sitename": article.meta_site_name
                     }
                 },
-                "meta": {
+                "context": {
                     "scraper": scraper,
                     "last_indexed": datetime.datetime.now(datetime.timezone.utc)
                 }

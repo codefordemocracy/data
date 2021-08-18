@@ -87,7 +87,7 @@ def loop():
     values = []
     actions = []
     for index, row in df.iterrows():
-        processed = {
+        doc = {
             "source": {
                 "classification": row["classification"],
             },
@@ -115,8 +115,8 @@ def loop():
             "tran_id": row["tran_id"],
             "sub_id": row["sub_id"]
         }
-        if processed["source"]["classification"] == "individual" or processed["source"]["classification"] == "organization":
-            processed["source"]["donor"] = {
+        if doc["source"]["classification"] == "individual" or doc["source"]["classification"] == "organization":
+            doc["source"]["donor"] = {
                 "entity_tp": row["donor_entity_tp"],
                 "name": row["donor_name"],
                 "state": row["donor_state"],
@@ -124,8 +124,8 @@ def loop():
                 "employer": row["donor_employer"],
                 "occupation": row["donor_occupation"]
             }
-        elif processed["source"]["classification"] == "candidate":
-            processed["source"]["candidate"] = {
+        elif doc["source"]["classification"] == "candidate":
+            doc["source"]["candidate"] = {
                 "cand_id": row["source"],
                 "cand_name": row["source_cand_name"],
                 "cand_pty_affiliation": row["source_cand_pty_affiliation"],
@@ -137,8 +137,8 @@ def loop():
                 "cand_pcc": row["source_cand_pcc"],
                 "cand_zip": row["source_cand_zip"]
             }
-        elif processed["source"]["classification"] == "committee":
-            processed["source"]["committee"] = {
+        elif doc["source"]["classification"] == "committee":
+            doc["source"]["committee"] = {
                 "cmte_id": row["source"],
                 "cmte_nm": row["source_cmte_nm"],
                 "cmte_zip": row["source_cmte_zip"],
@@ -154,8 +154,8 @@ def loop():
             "_index": "federal_fec_contributions",
             "_id": row["sub_id"],
             "_source": {
-                "processed": processed,
-                "meta": {
+                "row": doc,
+                "context": {
                     "last_indexed": datetime.datetime.now(datetime.timezone.utc)
                 }
             }

@@ -112,21 +112,19 @@ def federal_irs_ingest_get_990s(message, context):
                 '_index': 'federal_irs_' + index,
                 '_id': object_id,
                 '_source': {
-                    'obj': {
-                        'index': {
-                            'return_id': str(row[0]),
-                            'filing_type': row[1],
-                            'ein': str(row[2]),
-                            'tax_period': row[3],
-                            'sub_date': sub_date,
-                            'taxpayer_name': row[5],
-                            'return_type': str(row[6]),
-                            'dln': str(row[7]),
-                            'object_id': object_id
-                        },
-                        'xml': xml
+                    'row': {
+                        'return_id': str(row[0]),
+                        'filing_type': row[1],
+                        'ein': str(row[2]),
+                        'tax_period': row[3],
+                        'sub_date': sub_date,
+                        'taxpayer_name': row[5],
+                        'return_type': str(row[6]),
+                        'dln': str(row[7]),
+                        'object_id': object_id
                     },
-                    'meta': {
+                    'obj': xml,
+                    'context': {
                         'last_indexed': datetime.datetime.now(datetime.timezone.utc)
                     }
                 }

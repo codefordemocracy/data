@@ -99,7 +99,7 @@ def loop(token, after, errors):
                     "_source": {
                         "obj": ad,
                         "processed": processed,
-                        "meta": {
+                        "context": {
                             "last_indexed": datetime.datetime.now(datetime.timezone.utc)
                         }
                     }

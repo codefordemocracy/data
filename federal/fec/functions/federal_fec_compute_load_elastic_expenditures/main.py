@@ -84,7 +84,7 @@ def loop():
     values = []
     actions = []
     for index, row in df.iterrows():
-        processed = {
+        doc = {
             "type": row["type"],
             "spender": {
                 "cmte_id": row["cmte_id"],
@@ -117,7 +117,7 @@ def loop():
             "sub_id": row["sub_id"]
         }
         if row["sup_opp"] is not None or row["cand_id"] is not None or row["cand_name"] is not None:
-            processed["content"] = {
+            doc["content"] = {
                 "sup_opp": row["sup_opp"],
                 "cand_id": row["cand_id"],
                 "cand_name": row["cand_name"],
@@ -132,8 +132,8 @@ def loop():
             "_index": "federal_fec_expenditures",
             "_id": row["id"],
             "_source": {
-                "processed": processed,
-                "meta": {
+                "row": doc,
+                "context": {
                     "last_indexed": datetime.datetime.now(datetime.timezone.utc)
                 }
             }

@@ -46,7 +46,7 @@ def federal_fec_compute_load_elastic_committees(message, context):
             "_index": "federal_fec_committees",
             "_id": row["cmte_id"],
             "_source": {
-                "obj": {
+                "row": {
                     "cmte_id": row["cmte_id"],
                     "cmte_nm": row["cmte_nm"],
                     "tres_nm": row["tres_nm"],
@@ -63,7 +63,7 @@ def federal_fec_compute_load_elastic_committees(message, context):
                     "connected_org_nm": row["connected_org_nm"],
                     "cand_id": ["cand_id"]
                 },
-                "meta": {
+                "context": {
                     "last_indexed": datetime.datetime.now(datetime.timezone.utc)
                 }
             }

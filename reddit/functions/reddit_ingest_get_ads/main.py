@@ -76,7 +76,7 @@ def reddit_ingest_get_ads(message, context):
             "_source": {
                 "obj": obj,
                 "processed": processed,
-                "meta": {
+                "context": {
                     "last_indexed": datetime.datetime.now(datetime.timezone.utc)
                 }
             }

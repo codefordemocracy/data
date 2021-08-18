@@ -29,15 +29,15 @@ def news_articles_ingest_queue_duplicates(message, context):
     start = datetime.datetime.now() - datetime.timedelta(days=1)
 
     # scan through the documents
-    s = Search(using=es, index='news_articles').source(['extracted.url','meta.last_indexed'])
-    docs = s.filter('range', meta__last_indexed={"gt": start}).scan()
+    s = Search(using=es, index='news_articles').source(['extracted.url','context.last_indexed'])
+    docs = s.filter('range', context__last_indexed={"gt": start}).scan()
 
     # for each URL, create an array of its documents
     urls = dict()
     for doc in docs:
         id = doc.meta.id
         doc = doc.to_dict()
-        urls.setdefault(doc["extracted"]["url"], []).append({"id": id, "last_indexed": doc["meta"]["last_indexed"]})
+        urls.setdefault(doc["extracted"]["url"], []).append({"id": id, "last_indexed": doc["context"]["last_indexed"]})
     logger.info(' - '.join(['INFO', 'dictionary of urls created', str(len(urls))]))
 
     # add duplicate articles to a queue for deletion

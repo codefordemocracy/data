@@ -303,7 +303,7 @@ def federal_house_lobbying_ingest_get_contributions(message, context):
                     '_source': {
                         'obj': json_from_dict,
                         'processed': processed,
-                        'meta': {
+                        'context': {
                             'last_indexed': datetime.datetime.now(datetime.timezone.utc)
                         }
                     }
