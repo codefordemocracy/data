@@ -149,16 +149,33 @@ def loop():
                 "org_tp": row["source_org_tp"],
                 "connected_org_nm": row["source_connected_org_nm"]
             }
+        processed_name = None
+        if doc["source"]["classification"] == "individual":
+            processed_name = doc["source"]["donor"]["name"]
+            try:
+                processed_name = processed_name.split(",")[1] + " " + processed_name.split(",")[0]
+                processed_name = processed_name.strip()
+            except:
+                pass
+        record = {
+            "row": doc,
+            "context": {
+                "last_indexed": datetime.datetime.now(datetime.timezone.utc)
+            }
+        }
+        if processed_name is not None:
+            record["processed"] = {
+                "source": {
+                    "donor": {
+                        "name": processed_name
+                    }
+                }
+            }
         actions.append({
             "_op_type": "index",
             "_index": "federal_fec_contributions",
             "_id": row["sub_id"],
-            "_source": {
-                "row": doc,
-                "context": {
-                    "last_indexed": datetime.datetime.now(datetime.timezone.utc)
-                }
-            }
+            "_source": record
         })
         values.append(row["sub_id"])
 
