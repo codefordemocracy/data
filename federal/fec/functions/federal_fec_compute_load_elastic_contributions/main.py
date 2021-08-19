@@ -160,22 +160,26 @@ def loop():
         record = {
             "row": doc,
             "context": {
+                "last_bulked": datetime.datetime.now(datetime.timezone.utc),
                 "last_indexed": datetime.datetime.now(datetime.timezone.utc)
             }
         }
-        if processed_name is not None:
-            record["processed"] = {
-                "source": {
+        if doc["transaction_dt"] is not None or processed_name is not None:
+            record["processed"] = dict()
+            if doc["transaction_dt"] is not None:
+                record["processed"]["date"] = doc["transaction_dt"]
+            if processed_name is not None:
+                record["processed"]["source"] = {
                     "donor": {
                         "name": processed_name
                     }
                 }
-            }
         actions.append({
-            "_op_type": "index",
+            "_op_type": "update",
             "_index": "federal_fec_contributions",
             "_id": row["sub_id"],
-            "_source": record
+            "doc": record,
+            "doc_as_upsert": True
         })
         values.append(row["sub_id"])
 

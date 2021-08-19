@@ -74,6 +74,8 @@ The work of downloading, transforming, and loading datasets is handled by these 
 * **federal_fec_ingest_queue_import**: sends FEC file paths from Google Cloud Storage to be imported
 * **federal_fec_ingest_import_bigquery**: imports the data from Cloud Storage into BigQuery
 * **federal_fec_ingest_create_master_tables**: creates the master candidates, committees, and contributions tables
+* **federal_fec_ingest_get_financials**: gets financials from FEC API and loads them into Elasticsearch
+* **federal_fec_ingest_get_receipts**: gets schedule a data from FEC API and load into Elasticsearch
 * **federal_fec_compute_load_elastic_candidates**: load candidates from BigQuery into Elasticsearch
 * **federal_fec_compute_load_elastic_committees**: load committees from BigQuery into Elasticsearch
 * **federal_fec_compute_load_elastic_contributions**: load contributions from BigQuery into Elasticsearch
