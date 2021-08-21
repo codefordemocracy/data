@@ -49,7 +49,7 @@ The work of downloading, transforming, and loading datasets is handled by these 
 ### Facebook
 
 * **facebook_ingest_get_ads**: indexes Facebook ads into ElasticSearch
-* **facebook_compute_load_ads**: takes Facebook ads from ElasticSearch and load into Neo4j
+* **facebook_compute_load_graph**: takes Facebook ads from ElasticSearch and load into Neo4j
 
 ### Reddit
 
@@ -60,9 +60,8 @@ The work of downloading, transforming, and loading datasets is handled by these 
 * **twitter_ingest_queue_get**: triggers the get functions
 * **twitter_ingest_get_timeline**: get timeline tweets from user id and update Firestore and ElasticSearch
 * **twitter_ingest_get_tweets**: get a list of tweets and update Firestore and ElasticSearch
-* **twitter_compute_queue_users**: queue loading tweets from primary users
+* **twitter_compute_queue_graph**: queue loading tweets from primary users and the loading queue
 * **twitter_compute_load_graph**: loads tweets from Elasticsearch into Neo4j
-* **twitter_compute_catchup_graph**: searches Neo4j for tweets that errored out and sends for reloading
 * **twitter_compute_extract_domains**: extracts domains from links
 
 ### Federal
@@ -78,9 +77,13 @@ The work of downloading, transforming, and loading datasets is handled by these 
 * **federal_fec_ingest_get_receipts**: gets schedule a data from FEC API and load into Elasticsearch
 * **federal_fec_compute_load_elastic_candidates**: load candidates from BigQuery into Elasticsearch
 * **federal_fec_compute_load_elastic_committees**: load committees from BigQuery into Elasticsearch
+* **federal_fec_compute_load_elastic_linkages**: load linkages from BigQuery into Elasticsearch
 * **federal_fec_compute_load_elastic_contributions**: load contributions from BigQuery into Elasticsearch
 * **federal_fec_compute_load_elastic_expenditures**: load expenditures from BigQuery into Elasticsearch
-* **federal_fec_compute_load_graph**: loads the FEC data into Neo4j
+* **federal_fec_compute_load_candidates**: loads the FEC candidates into Neo4j
+* **federal_fec_compute_load_committees**: loads the FEC committees into Neo4j
+* **federal_fec_compute_load_contributions**: loads the FEC contributions into Neo4j
+* **federal_fec_compute_load_expenditures**: loads the FEC expenditures into Neo4j
 * **federal_fec_ingest_unzip_gcs**: automatically unzips .zip files in Google Cloud Storage
 
 #### IRS

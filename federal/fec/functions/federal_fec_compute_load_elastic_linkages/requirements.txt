@@ -1,5 +1,5 @@
 google-cloud-secret-manager==2.2.0
-neo4j==4.2.1
 google-cloud-bigquery==1.24.0
 pandas>=1.0.0
+elasticsearch==7.13.4
 numpy==1.18.4

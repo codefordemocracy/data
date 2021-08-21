@@ -31,11 +31,11 @@ es = Elasticsearch(elastic_host, http_auth=(elastic_username_data, elastic_passw
 driver = GraphDatabase.driver(neo4j_connection, auth=(neo4j_username_data, neo4j_password_data))
 
 # takes Facebook ads from ElasticSearch and load into Neo4j
-def facebook_compute_load_ads(message, context):
+def facebook_compute_load_graph(message, context):
 
     # configure ElasticSearch search
     s = Search(using=es, index="facebook_ads")
-    q = s.exclude("term", in_graph="true")
+    q = s.filter("exists", field="obj.ad_delivery_start_time").exclude("exists", field="context.last_graphed")
 
     # get start time
     start = time.time()
@@ -43,7 +43,7 @@ def facebook_compute_load_ads(message, context):
     # loop for 520s
     while time.time()-start < 520:
 
-        docs = q[0:100].sort("-obj.ad_creation_time").exclude("exists", field="meta.last_graphed").execute()
+        docs = q[0:1000].sort("-obj.ad_creation_time").execute()
         if len(docs) == 0:
             logger.info(' - '.join(['NO ADS FOUND FOR LOADING']))
             break
@@ -57,6 +57,7 @@ def facebook_compute_load_ads(message, context):
         messages = []
         pages = []
         buyers = []
+        pages_buyers = []
         states = []
         for doc in docs:
             # make ad objects
@@ -170,6 +171,12 @@ def facebook_compute_load_ads(message, context):
                     "id": doc.obj.id,
                     "name": doc.obj["funding_entity"].upper().strip()
                 })
+            # make page/buyer associations
+            if "page_id" in doc.obj and "funding_entity" in doc.obj:
+                pages_buyers.append({
+                    "page_id": doc.obj.page_id,
+                    "buyer_name": doc.obj["funding_entity"].upper().strip()
+                })
             # make state objects
             if "regions" in doc.processed:
                 for region in doc.processed.regions:
@@ -182,8 +189,8 @@ def facebook_compute_load_ads(message, context):
                 "_op_type": "update",
                 "_index": "facebook_ads",
                 "_id": doc.obj.id,
-                "_source": {
-                    "meta": {
+                "doc": {
+                    "context": {
                         "last_graphed": datetime.datetime.now(datetime.timezone.utc)
                     }
                 }
@@ -197,6 +204,7 @@ def facebook_compute_load_ads(message, context):
             neo4j.write_transaction(cypher.merge_messages, batch=messages)
             neo4j.write_transaction(cypher.merge_pages, batch=pages)
             neo4j.write_transaction(cypher.merge_buyers, batch=buyers)
+            neo4j.write_transaction(cypher.merge_pages_buyers, batch=pages_buyers)
             neo4j.write_transaction(cypher.merge_states, batch=states)
         # batch write to elasticsearch
         helpers.bulk(es, actions)

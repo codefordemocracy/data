@@ -69,6 +69,14 @@ def merge_buyers(tx, batch):
            "ON CREATE SET r.uuid = apoc.create.uuid()",
            batch=batch)
 
+def merge_pages_buyers(tx, batch):
+    tx.run("UNWIND $batch AS i "
+           "MERGE (a:Page {id: i.page_id}) "
+           "MERGE (b:Buyer {name: i.buyer_name}) "
+           "MERGE (a)-[r:ASSOCIATED_WITH]->(b) "
+           "ON CREATE SET r.uuid = apoc.create.uuid()",
+           batch=batch)
+
 def merge_states(tx, batch):
     tx.run("UNWIND $batch AS i "
            "MERGE (a:Ad {id: i.id}) "
