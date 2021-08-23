@@ -61,7 +61,7 @@ def federal_fec_compute_load_elastic_committees(message, context):
                     "cmte_filing_freq": row["cmte_filing_freq"],
                     "org_tp": row["org_tp"],
                     "connected_org_nm": row["connected_org_nm"],
-                    "cand_id": ["cand_id"]
+                    "cand_id": row["cand_id"]
                 },
                 "context": {
                     "last_indexed": datetime.datetime.now(datetime.timezone.utc)
