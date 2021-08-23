@@ -46,7 +46,7 @@ def twitter_compute_queue_graph(message, context):
     # queue primary users
     s = Search(using=es, index="twitter_users_new")
     q = s.filter("term", context__primary=True).source(False)
-    docs = q[0:500].sort("-context.last_graphed").execute()
+    docs = q[0:500].sort("-context.last_updated").execute()
     for doc in docs:
         # send to queue_tweets by user_id
         topic = 'projects/' + gcp_project_id + '/topics/twitter_compute_load_graph'

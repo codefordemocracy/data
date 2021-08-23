@@ -34,7 +34,19 @@ def twitter_ingest_get_tweets(message, context):
     chunk2 = json.loads(message['attributes']['chunk2'])
     chunk3 = json.loads(message['attributes']['chunk3'])
     chunk = chunk1 + chunk2 + chunk3
-    chunk_string = json.dumps(chunk)
+
+    # check to make sure tweets don't already exist
+    new_chunk = []
+    for id in chunk:
+        try:
+            doc = es.get(index="twitter_tweets_new", id=id, _source="context.api_version")
+            if doc["_source"]["context"]["api_version"] != 2:
+                new_chunk.append(id)
+        except:
+            new_chunk.append(id)
+
+    # create chunk string from new chunk
+    chunk_string = json.dumps(new_chunk)
     chunk_string = chunk_string[1:-1].replace(" ", "")
 
     # set up Firestore refs
@@ -146,7 +158,7 @@ def twitter_ingest_get_tweets(message, context):
 
         # bulk update elasticsearch
         helpers.bulk(es, actions)
-        logger.info(' - '.join(['DOCS SYNCED TO ELASTICSEARCH', str(len(actions))]))
+        logger.info(' - '.join(['DOCS SYNCED TO ELASTICSEARCH', str(len(actions)), str(len(new_chunk))]))
 
         if len(data) > 0:
             for i in chunk:
