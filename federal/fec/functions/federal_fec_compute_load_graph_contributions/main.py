@@ -24,7 +24,7 @@ neo4j_username_data = secrets.access_secret_version(request={"name": "projects/9
 neo4j_password_data = secrets.access_secret_version(request={"name": "projects/952416783871/secrets/neo4j_password_data/versions/1"}).payload.data.decode()
 
 # connect to resources
-es = Elasticsearch(elastic_host, http_auth=(elastic_username_data, elastic_password_data), scheme='https', port=443, timeout=30)
+es = Elasticsearch(elastic_host, http_auth=(elastic_username_data, elastic_password_data), scheme='https', port=443, timeout=60)
 driver = GraphDatabase.driver(neo4j_connection, auth=(neo4j_username_data, neo4j_password_data))
 
 # helper function to update a record with the transaction date
