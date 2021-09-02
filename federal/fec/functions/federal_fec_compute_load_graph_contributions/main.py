@@ -42,7 +42,7 @@ def federal_fec_compute_load_graph_contributions(message, context):
 
     # configure ElasticSearch search
     s = Search(using=es, index="federal_fec_contributions")
-    q = s.filter("exists", field="row").exclude("exists", field="context.last_graphed")
+    q = s.filter("exists", field="row.source").filter("exists", field="row.target").exclude("exists", field="context.last_graphed")
 
     # get start time
     start = time.time()
@@ -149,7 +149,7 @@ def federal_fec_compute_load_graph_contributions(message, context):
                 if doc.row["source"]["donor"]["name"] is not None:
                     record = {
                         "entity_tp": doc.row["source"]["donor"]["entity_tp"],
-                        "name": doc.processed["source"]["donor"]["name"].strip() if doc.processed["source"]["donor"]["name"] is not None else "",
+                        "name": doc.row["source"]["donor"]["name"].strip() if doc.row["source"]["donor"]["name"] is not None else "",
                         "state": doc.row["source"]["donor"]["state"],
                         "zip_code": doc.row["source"]["donor"]["zip_code"],
                         "target": doc.row["target"]["committee"]["cmte_id"],
