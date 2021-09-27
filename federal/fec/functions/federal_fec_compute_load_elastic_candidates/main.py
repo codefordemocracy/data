@@ -41,6 +41,12 @@ def federal_fec_compute_load_elastic_candidates(message, context):
 
     actions = []
     for index, row in df.iterrows():
+        processed_name = row["cand_name"]
+        try:
+            processed_name = processed_name.split(",")[1] + " " + processed_name.split(",")[0]
+            processed_name = processed_name.strip()
+        except:
+            pass
         actions.append({
             "_op_type": "index",
             "_index": "federal_fec_candidates",
@@ -62,6 +68,11 @@ def federal_fec_compute_load_elastic_candidates(message, context):
                     "cand_city": row["cand_city"],
                     "cand_st": row["cand_st"],
                     "cand_zip": row["cand_zip"]
+                },
+                "processed": {
+                    "row": {
+                        "cand_name": processed_name
+                    }
                 },
                 "context": {
                     "last_indexed": datetime.datetime.now(datetime.timezone.utc)
