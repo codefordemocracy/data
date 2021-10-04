@@ -70,6 +70,7 @@ def loop(headers, url):
                     dt = pytz.timezone('US/Eastern').localize(dt)
                     dt = dt.strftime("%Y-%m-%dT%H:%M:%S%z")
                 contributions.append({
+                    "lobbyist": processed.get("lobbyist"),
                     "contribution_type": c.get("contribution_type_display"),
                     "contributor_name": c.get("contributor_name"),
                     "payee_name": c.get("payee_name"),

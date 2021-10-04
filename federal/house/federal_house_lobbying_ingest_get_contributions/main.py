@@ -286,6 +286,7 @@ def federal_house_lobbying_ingest_get_contributions(message, context):
                             dt = dt.strftime("%Y-%m-%dT%H:%M:%S%z")
                         if c.get("type") is not None or c.get("contributorName") is not None or c.get("payeeName") is not None or c.get("recipientName") is not None or c.get("amount") is not None or dt is not None:
                             contributions.append({
+                                "lobbyist": processed.get("lobbyist"),
                                 "contribution_type": c.get("type"),
                                 "contributor_name": c.get("contributorName"),
                                 "payee_name": c.get("payeeName"),

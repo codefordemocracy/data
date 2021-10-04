@@ -55,39 +55,29 @@ def loop(headers, url):
             },
             "url": filing.get("filing_document_url")
         }
-        issues = []
         activities = []
-        lobbyists = []
-        coverage = []
         for act in filing.get("lobbying_activities"):
-            if act.get("general_issue_code") is not None:
-                issues.append({
-                    "code": act.get("general_issue_code"),
-                    "display": act.get("general_issue_code_display")
-                })
-            if act.get("description") is not None:
-                activities.append(act.get("description"))
-            if act.get("lobbyists") is not None:
-                for lob in act.get("lobbyists"):
-                    if lob.get("lobbyist") is not None:
-                        name = [lob["lobbyist"].get("first_name"), lob["lobbyist"].get("middle_name"), lob["lobbyist"].get("last_name"), lob["lobbyist"].get("suffix")]
-                        name = [n for n in name if n is not None]
-                        if len(name) > 0:
-                            lobbyists.append({
+            for lob in act.get("lobbyists") or []:
+                if lob.get("lobbyist") is not None:
+                    name = [lob["lobbyist"].get("first_name"), lob["lobbyist"].get("middle_name"), lob["lobbyist"].get("last_name"), lob["lobbyist"].get("suffix")]
+                    name = [n for n in name if n is not None]
+                    if len(name) > 0:
+                        row = {
+                            "lobbyist": {
                                 "id": lob["lobbyist"].get("id"),
                                 "name": " ".join(name)
-                            })
-                    if lob.get("covered_position") is not None:
-                        if lob.get("covered_position") != 'N/A':
-                            coverage.append(lob.get("covered_position"))
-        if len(issues) > 0:
-            processed["issues"] = issues
+                            }
+                        }
+                        if lob.get("covered_position") is not None:
+                            if lob.get("covered_position") != "N/A":
+                                row["covered_position"] = lob.get("covered_position")
+                        if act.get("general_issue_code") is not None:
+                            row["issue_area_code"] = act.get("general_issue_code")
+                        if act.get("description") is not None:
+                            row["specific_issues"] = act.get("description")
+                        activities.append(row)
         if len(activities) > 0:
             processed["activities"] = activities
-        if len(lobbyists) > 0:
-            processed["lobbyists"] = lobbyists
-        if len(coverage) > 0:
-            processed["coverage"] = coverage
         actions.append({
             "_op_type": "index",
             "_index": index,

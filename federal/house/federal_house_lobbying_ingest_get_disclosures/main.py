@@ -337,38 +337,47 @@ def federal_house_lobbying_ingest_get_disclosures(message, context):
                 },
                 "url": "https://disclosurespreview.house.gov/ld/ldxmlrelease/" + json_from_dict.get("reportYear") + "/" + json_from_dict.get("reportType") + "/" + hit["_id"] + ".xml"
             }
-            issues = []
             activities = []
-            lobbyists = []
-            coverage = []
-            if json_from_dict.get("alis", {}).get("ali_Code") is not None:
-                issues = [{"code": c} for c in json_from_dict["alis"]["ali_Code"] if c is not None]
             if json_from_dict.get("alis", {}).get("ali_info") is not None:
                 for i in json_from_dict.get("alis", {}).get("ali_info"):
-                    if i.get("issueAreaCode") is not None:
-                        issues.append({"code": i.get("issueAreaCode")})
-                    if i.get("specific_issues", {}).get("description") is not None:
-                        activities.append(i.get("specific_issues", {}).get("description"))
-            if json_from_dict.get("specific_issues") is not None:
-                activities.append(json_from_dict["specific_issues"])
-            if json_from_dict.get("lobbyists", {}).get("lobbyist") is not None:
+                    if i.get("lobbyists", {}).get("lobbyist") is not None:
+                        for lob in i["lobbyists"]["lobbyist"]:
+                            name = [lob.get("lobbyistFirstName"), lob.get("lobbyistLastName"), lob.get("lobbyistSuffix")]
+                            name = [n for n in name if n is not None]
+                            if len(name) > 0:
+                                row = {
+                                    "lobbyist": {
+                                        "name": " ".join(name)
+                                    }
+                                }
+                                if lob.get("coveredPosition") is not None:
+                                    if lob.get("coveredPosition") != "N/A":
+                                        row["covered_position"] = lob.get("coveredPosition")
+                                if i.get("issueAreaCode") is not None:
+                                    row["issue_area_code"] = i.get("issueAreaCode")
+                                if i.get("specific_issues", {}).get("description") is not None:
+                                    row["specific_issues"] = i.get("specific_issues", {}).get("description")
+                                activities.append(row)
+            elif json_from_dict.get("lobbyists", {}).get("lobbyist") is not None:
                 for lob in json_from_dict["lobbyists"]["lobbyist"]:
                     name = [lob.get("lobbyistFirstName"), lob.get("lobbyistLastName"), lob.get("lobbyistSuffix")]
                     name = [n for n in name if n is not None]
                     if len(name) > 0:
-                        lobbyists.append({
-                            "name": " ".join(name)
-                        })
-                    if lob.get("coveredPosition") is not None:
-                        coverage.append(lob.get("coveredPosition"))
-            if len(issues) > 0:
-                processed["issues"] = issues
+                        row = {
+                            "lobbyist": {
+                                "name": " ".join(name)
+                            }
+                        }
+                        if lob.get("coveredPosition") is not None:
+                            if lob.get("coveredPosition") != "N/A":
+                                row["covered_position"] = lob.get("coveredPosition")
+                        if json_from_dict.get("alis", {}).get("ali_Code") is not None:
+                            row["issue_area_code"] = [c for c in json_from_dict["alis"]["ali_Code"] if c is not None]
+                        if json_from_dict.get("specific_issues") is not None:
+                            row["specific_issues"] = json_from_dict["specific_issues"]
+                        activities.append(row)
             if len(activities) > 0:
                 processed["activities"] = activities
-            if len(lobbyists) > 0:
-                processed["lobbyists"] = lobbyists
-            if len(coverage) > 0:
-                processed["coverage"] = coverage
             actions.append(
                 {
                     '_op_type': 'index',
