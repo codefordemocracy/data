@@ -92,6 +92,28 @@ def loop(headers, url):
                     }
                 }
             })
+        if es.exists(index=index, id=key) is False:
+            contributions = processed.get("contributions")
+            if contributions is not None:
+                processed.pop("contributions")
+                if processed.get("pacs") is not None:
+                    processed.pop("pacs")
+                parent = processed
+                for contribution in contributions:
+                    record = {
+                        "context": {
+                            "last_indexed": datetime.datetime.now(datetime.timezone.utc),
+                            "parent_id": key,
+                        },
+                        "parent": parent,
+                        "child": contribution
+                    }
+                    actions.append({
+                        "_op_type": "index",
+                        "_index": index+"_nested",
+                        "_source": record
+                    })
+
     helpers.bulk(es, actions)
     return r.json().get('next')
 

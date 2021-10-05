@@ -392,6 +392,25 @@ def federal_house_lobbying_ingest_get_disclosures(message, context):
                     }
                 }
             )
+            if es.exists(index="federal_house_lobbying_disclosures", id=hit['_id']) is False:
+                activities = processed.get("activities")
+                if activities is not None:
+                    processed.pop("activities")
+                    parent = processed
+                    for activity in activities:
+                        record = {
+                            "context": {
+                                "last_indexed": datetime.datetime.now(datetime.timezone.utc),
+                                "parent_id": hit['_id'],
+                            },
+                            "parent": parent,
+                            "child": activity
+                        }
+                        actions.append({
+                            "_op_type": "index",
+                            "_index": "federal_house_lobbying_disclosures_nested",
+                            "_source": record
+                        })
 
         if actions:
             helpers.bulk(es, actions)

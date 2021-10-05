@@ -310,6 +310,27 @@ def federal_house_lobbying_ingest_get_contributions(message, context):
                     }
                 }
             )
+            if es.exists(index="federal_house_lobbying_contributions", id=hit['_id']) is False:
+                contributions = processed.get("contributions")
+                if contributions is not None:
+                    processed.pop("contributions")
+                    if processed.get("pacs") is not None:
+                        processed.pop("pacs")
+                    parent = processed
+                    for contribution in contributions:
+                        record = {
+                            "context": {
+                                "last_indexed": datetime.datetime.now(datetime.timezone.utc),
+                                "parent_id": hit['_id'],
+                            },
+                            "parent": parent,
+                            "child": contribution
+                        }
+                        actions.append({
+                            "_op_type": "index",
+                            "_index": "federal_house_lobbying_contributions_nested",
+                            "_source": record
+                        })
 
         if actions:
             helpers.bulk(es, actions)
