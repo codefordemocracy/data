@@ -347,7 +347,7 @@ def federal_house_lobbying_ingest_get_disclosures(message, context):
                             if len(name) > 0:
                                 row = {
                                     "lobbyist": {
-                                        "name": " ".join(name)
+                                        "name": " ".join(name).upper()
                                     }
                                 }
                                 if lob.get("coveredPosition") is not None:
@@ -365,7 +365,7 @@ def federal_house_lobbying_ingest_get_disclosures(message, context):
                     if len(name) > 0:
                         row = {
                             "lobbyist": {
-                                "name": " ".join(name)
+                                "name": " ".join(name).upper()
                             }
                         }
                         if lob.get("coveredPosition") is not None:

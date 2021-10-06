@@ -243,7 +243,7 @@ def federal_house_lobbying_ingest_get_contributions(message, context):
             name = [json_from_dict.get("lobbyistFirstName"), json_from_dict.get("lobbyistMiddleName"), json_from_dict.get("lobbyistLastName"), json_from_dict.get("lobbyistSuffix")]
             name = [n for n in name if n is not None]
             if len(name) > 0:
-                lobbyist["name"] = " ".join(name)
+                lobbyist["name"] = " ".join(name).upper()
             if len(lobbyist) > 0:
                 processed["lobbyist"] = lobbyist
             contributions = []
