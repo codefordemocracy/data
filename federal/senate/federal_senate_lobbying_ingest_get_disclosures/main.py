@@ -78,19 +78,19 @@ def loop(headers, url):
                         activities.append(row)
         if len(activities) > 0:
             processed["activities"] = activities
-        actions.append({
-            "_op_type": "index",
-            "_index": index,
-            "_id": key,
-            "_source": {
-                "obj": filing,
-                "processed": processed,
-                "context": {
-                    "last_indexed": datetime.datetime.now(datetime.timezone.utc)
-                }
-            }
-        })
         if es.exists(index=index, id=key) is False:
+            actions.append({
+                "_op_type": "index",
+                "_index": index,
+                "_id": key,
+                "_source": {
+                    "obj": filing,
+                    "processed": processed,
+                    "context": {
+                        "last_indexed": datetime.datetime.now(datetime.timezone.utc)
+                    }
+                }
+            })
             activities = processed.get("activities")
             if activities is not None:
                 processed.pop("activities")

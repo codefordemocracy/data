@@ -378,21 +378,21 @@ def federal_house_lobbying_ingest_get_disclosures(message, context):
                         activities.append(row)
             if len(activities) > 0:
                 processed["activities"] = activities
-            actions.append(
-                {
-                    '_op_type': 'index',
-                    '_index': 'federal_house_lobbying_disclosures',
-                    '_id': hit['_id'],
-                    '_source': {
-                        'obj': json_from_dict,
-                        'processed': processed,
-                        'context': {
-                            'last_indexed': datetime.datetime.now(datetime.timezone.utc)
+            if es.exists(index="federal_house_lobbying_disclosures", id=hit['_id']) is False:
+                actions.append(
+                    {
+                        '_op_type': 'index',
+                        '_index': 'federal_house_lobbying_disclosures',
+                        '_id': hit['_id'],
+                        '_source': {
+                            'obj': json_from_dict,
+                            'processed': processed,
+                            'context': {
+                                'last_indexed': datetime.datetime.now(datetime.timezone.utc)
+                            }
                         }
                     }
-                }
-            )
-            if es.exists(index="federal_house_lobbying_disclosures", id=hit['_id']) is False:
+                )
                 activities = processed.get("activities")
                 if activities is not None:
                     processed.pop("activities")

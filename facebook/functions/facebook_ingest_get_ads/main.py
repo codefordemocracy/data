@@ -69,6 +69,7 @@ def loop(token, after, errors):
             weekday = False
 
         load = False
+        update = False
         if weekday:
             # check if both first and last ad is already in ElasticSearch
             try:
@@ -81,10 +82,10 @@ def loop(token, after, errors):
                 load = True
                 pass
         else:
-            load = True
+            update = True
 
         # logic for loading
-        if load:
+        if load or update:
             actions = []
             for ad in ads["data"]:
                 processed = dict()
@@ -92,17 +93,21 @@ def loop(token, after, errors):
                     processed["regions"] = []
                     for region in ad["region_distribution"]:
                         processed["regions"].append(region["region"])
+                context = {
+                    "last_indexed": datetime.datetime.now(datetime.timezone.utc)
+                }
+                if load:
+                    context["first_indexed"] = datetime.datetime.now(datetime.timezone.utc)
                 actions.append({
-                    "_op_type": "index",
+                    "_op_type": "update",
                     "_index": "facebook_ads",
                     "_id": ad["id"],
-                    "_source": {
+                    "doc": {
                         "obj": ad,
                         "processed": processed,
-                        "context": {
-                            "last_indexed": datetime.datetime.now(datetime.timezone.utc)
-                        }
-                    }
+                        "context": context
+                    },
+                    "doc_as_upsert": True
                 })
             helpers.bulk(es, actions)
             logger.info(' - '.join(['ADS INDEXED', str(num)]))

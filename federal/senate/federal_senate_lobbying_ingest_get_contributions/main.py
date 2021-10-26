@@ -80,19 +80,19 @@ def loop(headers, url):
                 })
         if len(contributions) > 0:
             processed["contributions"] = contributions
-        actions.append({
-                "_op_type": "index",
-                "_index": index,
-                "_id": key,
-                "_source": {
-                    "obj": filing,
-                    "processed": processed,
-                    "context": {
-                        "last_indexed": datetime.datetime.now(datetime.timezone.utc)
-                    }
-                }
-            })
         if es.exists(index=index, id=key) is False:
+            actions.append({
+                    "_op_type": "index",
+                    "_index": index,
+                    "_id": key,
+                    "_source": {
+                        "obj": filing,
+                        "processed": processed,
+                        "context": {
+                            "last_indexed": datetime.datetime.now(datetime.timezone.utc)
+                        }
+                    }
+                })
             contributions = processed.get("contributions")
             if contributions is not None:
                 processed.pop("contributions")

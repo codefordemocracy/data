@@ -296,21 +296,21 @@ def federal_house_lobbying_ingest_get_contributions(message, context):
                             })
             if len(contributions) > 0:
                 processed["contributions"] = contributions
-            actions.append(
-                {
-                    '_op_type': 'index',
-                    '_index': 'federal_house_lobbying_contributions',
-                    '_id': hit['_id'],
-                    '_source': {
-                        'obj': json_from_dict,
-                        'processed': processed,
-                        'context': {
-                            'last_indexed': datetime.datetime.now(datetime.timezone.utc)
+            if es.exists(index="federal_house_lobbying_contributions", id=hit['_id']) is False:
+                actions.append(
+                    {
+                        '_op_type': 'index',
+                        '_index': 'federal_house_lobbying_contributions',
+                        '_id': hit['_id'],
+                        '_source': {
+                            'obj': json_from_dict,
+                            'processed': processed,
+                            'context': {
+                                'last_indexed': datetime.datetime.now(datetime.timezone.utc)
+                            }
                         }
                     }
-                }
-            )
-            if es.exists(index="federal_house_lobbying_contributions", id=hit['_id']) is False:
+                )
                 contributions = processed.get("contributions")
                 if contributions is not None:
                     processed.pop("contributions")
