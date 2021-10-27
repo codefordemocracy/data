@@ -114,8 +114,8 @@ def federal_fec_compute_load_graph_contributions(message, context):
                     record = {
                         "entity_tp": doc.row["source"]["donor"]["entity_tp"],
                         "name": doc.processed["source"]["donor"]["name"].strip() if doc.processed["source"]["donor"]["name"] is not None else "",
-                        "state": doc.row["source"]["donor"]["state"],
-                        "zip_code": doc.row["source"]["donor"]["zip_code"],
+                        "state": doc.row["source"]["donor"]["state"] or "",
+                        "zip_code": doc.row["source"]["donor"]["zip_code"] or "",
                         "employer": doc.row["source"]["donor"]["employer"].strip() if doc.row["source"]["donor"]["employer"] is not None else "",
                         "occupation": doc.row["source"]["donor"]["occupation"].strip() if doc.row["source"]["donor"]["occupation"] is not None else "",
                         "target": doc.row["target"]["committee"]["cmte_id"],
@@ -150,8 +150,8 @@ def federal_fec_compute_load_graph_contributions(message, context):
                     record = {
                         "entity_tp": doc.row["source"]["donor"]["entity_tp"],
                         "name": doc.row["source"]["donor"]["name"].strip() if doc.row["source"]["donor"]["name"] is not None else "",
-                        "state": doc.row["source"]["donor"]["state"],
-                        "zip_code": doc.row["source"]["donor"]["zip_code"],
+                        "state": doc.row["source"]["donor"]["state"] or "",
+                        "zip_code": doc.row["source"]["donor"]["zip_code"] or "",
                         "target": doc.row["target"]["committee"]["cmte_id"],
                         "transaction_amt": doc.row["transaction_amt"],
                         "amndt_ind": doc.row["amndt_ind"],
