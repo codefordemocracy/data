@@ -58,7 +58,7 @@ def federal_fec_compute_load_graph_candidates(message, context):
             if "row" in doc:
                 candidates.append({
                     "cand_id": doc.row["cand_id"],
-                    "cand_name": doc.row["cand_name"],
+                    "cand_name": doc.processed["row"]["cand_name"].strip() if doc.processed["row"]["cand_name"] is not None else "",
                     "cand_pty_affiliation": doc.row["cand_pty_affiliation"],
                     "cand_election_yr": doc.row["cand_election_yr"],
                     "cand_office_st": doc.row["cand_office_st"],
