@@ -70,7 +70,7 @@ def loop():
     count = 0
 
     query_job = client.query("""
-    SELECT a.id, a.type, a.cmte_id, a.cmte_nm, a.transaction_dt, a.transaction_amt, a.purpose, a.sup_opp, a.cand_id, a.cand_name, a.cand_pty_affiliation, a.cand_election_yr, a.cand_office_st, a.cand_office, a.cand_office_district, a.category, a.category_desc, a.payee, a.entity_tp, a.state, a.zip_code, a.transaction_pgi, a.amndt_ind, a.image_num, a.file_num, a.tran_id, a.line_num, a.rpt_yr, a.rpt_tp, a.form_tp_cd, a.sched_tp_cd, a.rec_dt, a.prev_file_num, a.back_ref_tran_id, a.sub_id
+    SELECT a.id, a.type, a.cmte_id, a.cmte_nm, a.cmte_zip, a.cmte_dsgn, a.cmte_tp, a.cmte_pty_affiliation, a.cmte_filing_freq, a.org_tp, a.connected_org_nm, a.transaction_dt, a.transaction_amt, a.purpose, a.sup_opp, a.cand_id, a.cand_name, a.cand_pty_affiliation, a.cand_election_yr, a.cand_office_st, a.cand_office, a.cand_office_district, a.cand_ici, a.cand_pcc, a.cand_zip, a.category, a.category_desc, a.payee, a.entity_tp, a.state, a.zip_code, a.transaction_pgi, a.amndt_ind, a.image_num, a.file_num, a.tran_id, a.line_num, a.rpt_yr, a.rpt_tp, a.form_tp_cd, a.sched_tp_cd, a.rec_dt, a.prev_file_num, a.back_ref_tran_id, a.sub_id
     FROM `federal_fec.expenditures22` a
     LEFT JOIN `federal_fec.loaded_expenditures22` b
     ON a.id = b.id
@@ -88,7 +88,14 @@ def loop():
             "type": row["type"],
             "spender": {
                 "cmte_id": row["cmte_id"],
-                "cmte_nm": row["cmte_nm"]
+                "cmte_nm": row["cmte_nm"],
+                "cmte_zip": row["cmte_zip"],
+                "cmte_dsgn": row["cmte_dsgn"],
+                "cmte_tp": row["cmte_tp"],
+                "cmte_pty_affiliation": row["cmte_pty_affiliation"],
+                "cmte_filing_freq": row["cmte_filing_freq"],
+                "org_tp": row["org_tp"],
+                "connected_org_nm": row["connected_org_nm"]
             },
             "payee": {
                 "name": row["payee"],
@@ -125,18 +132,44 @@ def loop():
                 "cand_election_yr": row["cand_election_yr"],
                 "cand_office_st": row["cand_office_st"],
                 "cand_office": row["cand_office"],
-                "cand_office_district": row["cand_office_district"]
+                "cand_office_district": row["cand_office_district"],
+                "cand_ici": row["cand_ici"],
+                "cand_pcc": row["cand_pcc"],
+                "cand_zip": row["cand_zip"]
+            }
+        record = {
+            "row": doc,
+            "context": {
+                "last_indexed": datetime.datetime.now(datetime.timezone.utc)
+            }
+        }
+        processed_payee_name = doc["payee"]["name"]
+        if doc["payee"]["entity_tp"] == "IND":
+            try:
+                processed_payee_name = processed_payee_name.split(",")[1] + " " + processed_payee_name.split(",")[0]
+                processed_payee_name = processed_payee_name.strip()
+            except:
+                pass
+        processed_cand_name = doc.get("content", {}).get("cand_name")
+        try:
+            processed_cand_name = processed_cand_name.split(",")[1] + " " + processed_cand_name.split(",")[0]
+            processed_cand_name = processed_cand_name.strip()
+        except:
+            pass
+        record["processed"] = {
+            "payee": {
+                "name": processed_payee_name
+            }
+        }
+        if processed_cand_name is not None:
+            record["processed"]["content"] = {
+                "cand_name": processed_cand_name
             }
         actions.append({
             "_op_type": "index",
             "_index": "federal_fec_expenditures",
             "_id": row["id"],
-            "_source": {
-                "row": doc,
-                "context": {
-                    "last_indexed": datetime.datetime.now(datetime.timezone.utc)
-                }
-            }
+            "_source": record
         })
         values.append(row["id"])
 

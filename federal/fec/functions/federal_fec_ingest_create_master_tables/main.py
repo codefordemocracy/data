@@ -73,6 +73,13 @@ def federal_fec_ingest_create_master_tables(message, context):
         bigquery.SchemaField("type", "STRING"),
         bigquery.SchemaField("cmte_id", "STRING"),
         bigquery.SchemaField("cmte_nm", "STRING"),
+        bigquery.SchemaField("cmte_zip", "STRING"),
+        bigquery.SchemaField("cmte_dsgn", "STRING"),
+        bigquery.SchemaField("cmte_tp", "STRING"),
+        bigquery.SchemaField("cmte_pty_affiliation", "STRING"),
+        bigquery.SchemaField("cmte_filing_freq", "STRING"),
+        bigquery.SchemaField("org_tp", "STRING"),
+        bigquery.SchemaField("connected_org_nm", "STRING"),
         bigquery.SchemaField("transaction_dt", "STRING"),
         bigquery.SchemaField("transaction_amt", "FLOAT"),
         bigquery.SchemaField("purpose", "STRING"),
@@ -84,6 +91,9 @@ def federal_fec_ingest_create_master_tables(message, context):
         bigquery.SchemaField("cand_office_st", "STRING"),
         bigquery.SchemaField("cand_office", "STRING"),
         bigquery.SchemaField("cand_office_district", "STRING"),
+        bigquery.SchemaField("cand_ici", "STRING"),
+        bigquery.SchemaField("cand_pcc", "STRING"),
+        bigquery.SchemaField("cand_zip", "STRING"),
         bigquery.SchemaField("category", "STRING"),
         bigquery.SchemaField("category_desc", "STRING"),
         bigquery.SchemaField("payee", "STRING"),
@@ -108,14 +118,14 @@ def federal_fec_ingest_create_master_tables(message, context):
     logger.info(' - '.join(['START', 'loading expenditures table']))
     job_config.destination = None
     expenditures_job = client.query("""
-    INSERT INTO `federal_fec.expenditures22` (id, type, cmte_id, cmte_nm, transaction_dt, transaction_amt, purpose, sup_opp, cand_id, cand_name, cand_pty_affiliation, cand_election_yr, cand_office_st, cand_office, cand_office_district, category, category_desc, payee, entity_tp, state, zip_code, transaction_pgi, amndt_ind, image_num, file_num, tran_id, line_num, rpt_yr, rpt_tp, form_tp_cd, sched_tp_cd, rec_dt, prev_file_num, back_ref_tran_id, sub_id)
-    SELECT CAST(a.sub_id AS STRING) AS id, 'operating' AS type, a.cmte_id, b.cmte_nm, CAST(PARSE_DATE('%m/%d/%Y', a.transaction_dt) AS STRING) AS transaction_dt, a.transaction_amt, a.purpose, null AS sup_opp, null AS cand_id, null AS cand_name, null AS cand_pty_affiliation, null AS cand_election_yr, null AS cand_office_st, null AS cand_office, null AS cand_office_district, a.category, a.category_desc, a.name as payee, a.entity_tp, a.state, SUBSTR(a.zip_code, 0, 5) AS zip_code, a.transaction_pgi, a.amndt_ind, a.image_num, a.file_num, a.tran_id, a.line_num, a.rpt_yr, a.rpt_tp, a.form_tp_cd, a.sched_tp_cd, null AS rec_dt, null AS prev_file_num, a.back_ref_tran_id, a.sub_id
+    INSERT INTO `federal_fec.expenditures22` (id, type, cmte_id, cmte_nm, cmte_zip, cmte_dsgn, cmte_tp, cmte_pty_affiliation, cmte_filing_freq, org_tp, connected_org_nm, transaction_dt, transaction_amt, purpose, sup_opp, cand_id, cand_name, cand_pty_affiliation, cand_election_yr, cand_office_st, cand_office, cand_office_district, cand_ici, cand_pcc, cand_zip, category, category_desc, payee, entity_tp, state, zip_code, transaction_pgi, amndt_ind, image_num, file_num, tran_id, line_num, rpt_yr, rpt_tp, form_tp_cd, sched_tp_cd, rec_dt, prev_file_num, back_ref_tran_id, sub_id)
+    SELECT CAST(a.sub_id AS STRING) AS id, 'operating' AS type, a.cmte_id, b.cmte_nm, b.cmte_zip, b.cmte_dsgn, b.cmte_tp, b.cmte_pty_affiliation, b.cmte_filing_freq, b.org_tp, b.connected_org_nm, CAST(PARSE_DATE('%m/%d/%Y', a.transaction_dt) AS STRING) AS transaction_dt, a.transaction_amt, a.purpose, null AS sup_opp, null AS cand_id, null AS cand_name, null AS cand_pty_affiliation, null AS cand_election_yr, null AS cand_office_st, null AS cand_office, null AS cand_office_district, null as cand_ici, null as cand_pcc, null as cand_zip, a.category, a.category_desc, a.name as payee, a.entity_tp, a.state, SUBSTR(a.zip_code, 0, 5) AS zip_code, a.transaction_pgi, a.amndt_ind, a.image_num, a.file_num, a.tran_id, a.line_num, a.rpt_yr, a.rpt_tp, a.form_tp_cd, a.sched_tp_cd, null AS rec_dt, null AS prev_file_num, a.back_ref_tran_id, a.sub_id
     FROM `federal_fec.oppexp22` a
     LEFT JOIN `federal_fec.cm22` b
     ON a.cmte_id = b.cmte_id
     WHERE a.memo_cd IS NULL
     UNION ALL
-    SELECT CONCAT(CAST(a.file_num AS STRING), '-' , a.tra_id), 'independent', a.spe_id, IFNULL(b.cmte_nm, a.spe_nam), CAST(PARSE_DATE('%d-%b-%y', CASE WHEN a.exp_dat = "" THEN null ELSE a.exp_dat END) AS STRING), a.exp_amo, a.pur, a.sup_opp, a.can_id, IFNULL(c.cand_name, a.can_nam), SUBSTR(IFNULL(c.cand_pty_affiliation, a.can_par_aff), 0, 3), IFNULL(c.cand_election_yr, a.fec_election_yr), IFNULL(c.cand_office_st, a.can_off_sta), IFNULL(c.cand_office, a.can_off), IFNULL(c.cand_office_district, a.can_off_dis), null, null, a.pay, null, null, null, CONCAT(a.ele_typ, a.fec_election_yr), a.amn_ind, a.ima_num, a.file_num, a.tra_id, null, null, null, null, null, CAST(PARSE_DATE('%d-%b-%y', CASE WHEN a.rec_dt = "" THEN null ELSE a.rec_dt END) AS STRING), a.prev_file_num, null, null
+    SELECT CONCAT(CAST(a.file_num AS STRING), '-' , a.tra_id), 'independent', a.spe_id, IFNULL(b.cmte_nm, a.spe_nam), b.cmte_zip, b.cmte_dsgn, b.cmte_tp, b.cmte_pty_affiliation, b.cmte_filing_freq, b.org_tp, b.connected_org_nm, CAST(PARSE_DATE('%d-%b-%y', CASE WHEN a.exp_dat = "" THEN null ELSE a.exp_dat END) AS STRING), a.exp_amo, a.pur, a.sup_opp, a.can_id, IFNULL(c.cand_name, a.can_nam), SUBSTR(IFNULL(c.cand_pty_affiliation, a.can_par_aff), 0, 3), IFNULL(c.cand_election_yr, a.fec_election_yr), IFNULL(c.cand_office_st, a.can_off_sta), IFNULL(c.cand_office, a.can_off), IFNULL(c.cand_office_district, a.can_off_dis), c.cand_ici, c.cand_pcc, c.cand_zip, null, null, a.pay, null, null, null, CONCAT(a.ele_typ, a.fec_election_yr), a.amn_ind, a.ima_num, a.file_num, a.tra_id, null, null, null, null, null, CAST(PARSE_DATE('%d-%b-%y', CASE WHEN a.rec_dt = "" THEN null ELSE a.rec_dt END) AS STRING), a.prev_file_num, null, null
     FROM `federal_fec.independent_expenditure_2022` a
     LEFT JOIN `federal_fec.cm22` b
     ON a.spe_id = b.cmte_id
