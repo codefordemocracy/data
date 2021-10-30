@@ -121,7 +121,7 @@ def loop():
             "rec_dt": parse_date(row["rec_dt"]),
             "prev_file_num": row["prev_file_num"],
             "back_ref_tran_id": row["back_ref_tran_id"],
-            "sub_id": row["sub_id"]
+            "sub_id": str(row["sub_id"])
         }
         if row["sup_opp"] is not None or row["cand_id"] is not None or row["cand_name"] is not None:
             doc["content"] = {

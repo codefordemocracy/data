@@ -113,7 +113,7 @@ def loop():
             "image_num": row["image_num"],
             "file_num": row["file_num"],
             "tran_id": row["tran_id"],
-            "sub_id": row["sub_id"]
+            "sub_id": str(row["sub_id"])
         }
         if doc["source"]["classification"] == "individual" or doc["source"]["classification"] == "organization":
             doc["source"]["donor"] = {
