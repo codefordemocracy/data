@@ -49,6 +49,9 @@ def get(two_year_transaction_period, load_date, last_contribution_receipt_amount
 def loop(two_year_transaction_period, load_date, last_contribution_receipt_amount, last_index):
     actions = []
     response = get(two_year_transaction_period, load_date, last_contribution_receipt_amount, last_index)
+    while response is False:
+        time.sleep(3)
+        response = get(two_year_transaction_period, load_date, last_contribution_receipt_amount, last_index)
     for obj in response["results"]:
         processed_name = None
         if obj["is_individual"] is True:
