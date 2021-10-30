@@ -9,6 +9,7 @@ import numpy as np
 import time
 import random
 import json
+import utilities
 
 # format logs
 formatter = '%(asctime)s - %(levelname)s - %(message)s'
@@ -149,12 +150,18 @@ def loop():
                 "org_tp": row["source_org_tp"],
                 "connected_org_nm": row["source_connected_org_nm"]
             }
-        processed_name = None
+        processed_donor_name = None
         if doc["source"]["classification"] == "individual":
-            processed_name = doc["source"]["donor"]["name"]
+            processed_donor_name = doc["source"]["donor"]["name"]
             try:
-                processed_name = processed_name.split(",")[1] + " " + processed_name.split(",")[0]
-                processed_name = processed_name.strip()
+                processed_donor_name = utilities.process_name(processed_donor_name)
+            except:
+                pass
+        processed_cand_name = None
+        if doc["source"]["classification"] == "candidate":
+            processed_cand_name = doc["source"]["candidate"]["cand_name"]
+            try:
+                processed_cand_name = utilities.process_name(processed_cand_name)
             except:
                 pass
         record = {
@@ -164,14 +171,20 @@ def loop():
                 "last_indexed": datetime.datetime.now(datetime.timezone.utc)
             }
         }
-        if doc["transaction_dt"] is not None or processed_name is not None:
+        if doc["transaction_dt"] is not None or processed_donor_name is not None or processed_cand_name is not None:
             record["processed"] = dict()
             if doc["transaction_dt"] is not None:
                 record["processed"]["date"] = doc["transaction_dt"]
-            if processed_name is not None:
+            if processed_donor_name is not None:
                 record["processed"]["source"] = {
                     "donor": {
-                        "name": processed_name
+                        "name": processed_donor_name
+                    }
+                }
+            if processed_cand_name is not None:
+                record["processed"]["source"] = {
+                    "candidate": {
+                        "cand_name": processed_cand_name
                     }
                 }
         actions.append({
@@ -209,7 +222,6 @@ def federal_fec_compute_load_elastic_contributions(message, context):
     start = time.time()
 
     # loop for 520s
-    section = 0
     while time.time()-start < 520:
         count = loop()
         loaded += count

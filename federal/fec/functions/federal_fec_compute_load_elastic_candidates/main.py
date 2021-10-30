@@ -5,6 +5,7 @@ from elasticsearch import Elasticsearch, helpers
 import datetime
 import pandas
 import numpy as np
+import utilities
 
 # format logs
 formatter = '%(asctime)s - %(levelname)s - %(message)s'
@@ -43,8 +44,7 @@ def federal_fec_compute_load_elastic_candidates(message, context):
     for index, row in df.iterrows():
         processed_name = row["cand_name"]
         try:
-            processed_name = processed_name.split(",")[1] + " " + processed_name.split(",")[0]
-            processed_name = processed_name.strip()
+            processed_name = utilities.process_name(processed_name)
         except:
             pass
         actions.append({

@@ -73,7 +73,7 @@ def federal_fec_compute_load_graph_expenditures(message, context):
                     "transaction_amt": doc.row["transaction_amt"],
                     "sup_opp": doc.row["content"]["sup_opp"],
                     "purpose": doc.row["purpose"].upper().strip() if doc.row["purpose"] is not None else "",
-                    "payee": doc.row["payee"]["name"].upper().strip() if doc.row["payee"]["name"] is not None else "",
+                    "payee": doc.processed["payee"]["name"].upper().strip() if doc.processed["payee"]["name"] is not None else "",
                     "amndt_ind": doc.row["amndt_ind"],
                     "image_num": doc.row["image_num"],
                     "tran_id": doc.row["tran_id"],
