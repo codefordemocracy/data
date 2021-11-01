@@ -37,6 +37,18 @@ def add_date(record, date):
     record["minute"] = date.minute
     return record
 
+# helper function to clean the zip code
+def clean_zip(zip_code):
+    if zip_code is None or zip_code == "":
+        return ""
+    try:
+        zip_code = int(zip_code)
+    except:
+        pass
+    if zip_code == 0:
+        return ""
+    return str(zip_code).zfill(5)
+
 # load FEC contributions into graph
 def federal_fec_compute_load_graph_contributions(message, context):
 
@@ -115,7 +127,7 @@ def federal_fec_compute_load_graph_contributions(message, context):
                         "entity_tp": doc.row["source"]["donor"]["entity_tp"],
                         "name": doc.processed["source"]["donor"]["name"].strip() if doc.processed["source"]["donor"]["name"] is not None else "",
                         "state": doc.row["source"]["donor"]["state"] or "",
-                        "zip_code": doc.row["source"]["donor"]["zip_code"] or "",
+                        "zip_code": clean_zip(doc.row["source"]["donor"]["zip_code"]),
                         "employer": doc.row["source"]["donor"]["employer"].strip() if doc.row["source"]["donor"]["employer"] is not None else "",
                         "occupation": doc.row["source"]["donor"]["occupation"].strip() if doc.row["source"]["donor"]["occupation"] is not None else "",
                         "target": doc.row["target"]["committee"]["cmte_id"],
@@ -137,13 +149,13 @@ def federal_fec_compute_load_graph_contributions(message, context):
                     if doc.row["source"]["donor"]["state"] is not None:
                         donor_ind_states.append({
                             "name": doc.processed["source"]["donor"]["name"].strip() if doc.processed["source"]["donor"]["name"] is not None else "",
-                            "zip_code": doc.row["source"]["donor"]["zip_code"],
+                            "zip_code": clean_zip(doc.row["source"]["donor"]["zip_code"]),
                             "state": doc.row["source"]["donor"]["state"]
                         })
                     if doc.row["source"]["donor"]["zip_code"] is not None:
                         donor_ind_zips.append({
                             "name": doc.processed["source"]["donor"]["name"].strip() if doc.processed["source"]["donor"]["name"] is not None else "",
-                            "zip_code": doc.row["source"]["donor"]["zip_code"]
+                            "zip_code": clean_zip(doc.row["source"]["donor"]["zip_code"])
                         })
             elif doc.row.source.classification == "organization":
                 if doc.row["source"]["donor"]["name"] is not None:
@@ -151,7 +163,7 @@ def federal_fec_compute_load_graph_contributions(message, context):
                         "entity_tp": doc.row["source"]["donor"]["entity_tp"],
                         "name": doc.row["source"]["donor"]["name"].strip() if doc.row["source"]["donor"]["name"] is not None else "",
                         "state": doc.row["source"]["donor"]["state"] or "",
-                        "zip_code": doc.row["source"]["donor"]["zip_code"] or "",
+                        "zip_code": clean_zip(doc.row["source"]["donor"]["zip_code"]),
                         "target": doc.row["target"]["committee"]["cmte_id"],
                         "transaction_amt": doc.row["transaction_amt"],
                         "amndt_ind": doc.row["amndt_ind"],
