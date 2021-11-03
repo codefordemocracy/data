@@ -151,7 +151,7 @@ def loop():
                 "connected_org_nm": row["source_connected_org_nm"]
             }
         processed_donor_name = None
-        if doc["source"]["classification"] == "individual":
+        if doc["source"]["classification"] == "individual" or doc["source"]["classification"] == "organization":
             processed_donor_name = doc["source"]["donor"]["name"]
             try:
                 processed_donor_name = utilities.process_name(processed_donor_name)

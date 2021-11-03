@@ -161,7 +161,7 @@ def federal_fec_compute_load_graph_contributions(message, context):
                 if doc.row["source"]["donor"]["name"] is not None:
                     record = {
                         "entity_tp": doc.row["source"]["donor"]["entity_tp"],
-                        "name": doc.row["source"]["donor"]["name"].strip() if doc.row["source"]["donor"]["name"] is not None else "",
+                        "name": doc.processed["source"]["donor"]["name"].strip() if doc.processed["source"]["donor"]["name"] is not None else "",
                         "state": doc.row["source"]["donor"]["state"] or "",
                         "zip_code": clean_zip(doc.row["source"]["donor"]["zip_code"]),
                         "target": doc.row["target"]["committee"]["cmte_id"],

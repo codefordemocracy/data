@@ -53,7 +53,12 @@ def remove_titles_start(name):
     return name
 
 def process_name(name):
+    name = name.upper()
     name = name.replace(".", "")
+    if name.endswith(", LLC"):
+        name = name.replace(", LLC", " LLC")
+    if name.endswith(", INC"):
+        name = name.replace(", INC", " INC")
     name = remove_titles_end(name)
     name = remove_titles_end(name)
     name = remove_titles_end(name)

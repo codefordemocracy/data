@@ -144,13 +144,11 @@ def loop():
                 "last_indexed": datetime.datetime.now(datetime.timezone.utc)
             }
         }
-        processed_payee_name = None
-        if doc["payee"]["entity_tp"] == "IND" or doc["type"] == "independent":
-            processed_payee_name = doc["payee"]["name"]
-            try:
-                processed_payee_name = utilities.process_name(processed_payee_name)
-            except:
-                pass
+        processed_payee_name = doc["payee"]["name"]
+        try:
+            processed_payee_name = utilities.process_name(processed_payee_name)
+        except:
+            pass
         processed_cand_name = doc.get("content", {}).get("cand_name")
         try:
             processed_cand_name = utilities.process_name(processed_cand_name)
