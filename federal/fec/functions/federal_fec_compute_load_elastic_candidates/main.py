@@ -70,9 +70,7 @@ def federal_fec_compute_load_elastic_candidates(message, context):
                     "cand_zip": row["cand_zip"]
                 },
                 "processed": {
-                    "row": {
-                        "cand_name": processed_name
-                    }
+                    "cand_name": processed_name
                 },
                 "context": {
                     "last_indexed": datetime.datetime.now(datetime.timezone.utc)
