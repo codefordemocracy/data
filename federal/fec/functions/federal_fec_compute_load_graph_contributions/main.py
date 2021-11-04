@@ -60,7 +60,7 @@ def federal_fec_compute_load_graph_contributions(message, context):
     start = time.time()
 
     # loop for 520s
-    while time.time()-start < 520:
+    while time.time()-start < 510:
 
         docs = q[0:1000].sort("-context.last_indexed").execute()
         if len(docs) == 0:
